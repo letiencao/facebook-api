@@ -15,7 +15,7 @@ public class CommonService {
 
     //Check != null và != "" cho các trường bắt buộc phải truyền
     //Object... thể hiện là mảng đối tượng truyền vào, tuy nhiên không bị giới hạn số lượng phần tử như static array
-    //tức là truyền bao nhiêu tham số cũng đượcccc
+    //tức là truyền bao nhiêu tham số cũng được
     public CommonResponse checkCommonValidate(Object... objects) {
         for(int i = 0;i < objects.length;i++){
             if(StringUtils.isEmpty(objects[i].toString())){
