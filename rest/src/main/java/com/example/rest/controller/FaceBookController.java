@@ -1,12 +1,14 @@
 package com.example.rest.controller;
 
 import com.example.rest.common.CommonResponse;
+import com.example.rest.model.response.LoginResponse;
 import com.example.rest.model.response.SignUpResponse;
 import com.example.rest.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(path = "/")
@@ -24,11 +26,11 @@ public class FaceBookController {
     }
 
     @PostMapping(path = "/login")
-    public ResponseEntity<CommonResponse<SignUpResponse>> login(
+    public ResponseEntity<CommonResponse<LoginResponse>> login(
             @RequestParam(name = "phoneNumber") String phoneNumber,
             @RequestParam(name = "password") String password,
             @RequestParam(name = "deviceId") String deviceId) {
-        return null;
+        return new ResponseEntity<>(userService.login(phoneNumber,password,deviceId),HttpStatus.OK);
     }
 
     @PostMapping(path = "/logout")
@@ -37,10 +39,13 @@ public class FaceBookController {
         return null;
     }
 
-    //Xem lại
     @PostMapping(path = "/add-post")
     public ResponseEntity<CommonResponse<SignUpResponse>> addPost(
-            @RequestParam(name = "token") String token) {
+            @RequestParam(name = "token") String token,
+            @RequestParam(name = "image") MultipartFile[] image,
+            @RequestParam(name = "video") MultipartFile video,
+            @RequestParam(name = "described") String described,
+            @RequestParam(name = "status") String status) {
         return null;
     }
 

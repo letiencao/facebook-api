@@ -24,11 +24,11 @@ public class JwtProvider {
 	private final long REFRESH_JWT_EXPIRATION = 604800000L;//1 week
 
 	// Tạo ra jwt từ thông tin user
-	public String generateAccessToken(String phoneNumber, String uuid) {
+	public String generateAccessToken(String phoneNumber) {
 		Date now = new Date();
 		Date expiryDate = new Date(now.getTime() + ACCESS_JWT_EXPIRATION);
 		// Tạo chuỗi json web token từ username của user.
-		return Jwts.builder().setId(uuid).setSubject(phoneNumber).setIssuedAt(now).setExpiration(expiryDate)
+		return Jwts.builder().setSubject(phoneNumber).setIssuedAt(now).setExpiration(expiryDate)
 				.signWith(SignatureAlgorithm.HS512, JWT_SECRET).compact();
 	}
 

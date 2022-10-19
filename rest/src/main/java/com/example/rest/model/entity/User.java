@@ -21,8 +21,11 @@ public class User extends BaseModel {
     private String phoneNumber;
     @Column(name = "link_avatar")
     private String linkAvatar;
-    @Column(name = "token")
-    private String token;
+    @Column(name = "uuid")
+    private String uuid;
+    @Column(name = "verification_code")
+    private String verificationCode;
+
 
 
     public String getName() {
@@ -57,11 +60,19 @@ public class User extends BaseModel {
         this.linkAvatar = linkAvatar;
     }
 
-    public String getToken() {
-        return token;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
     }
 }

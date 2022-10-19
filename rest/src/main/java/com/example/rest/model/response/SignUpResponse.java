@@ -1,13 +1,13 @@
 package com.example.rest.model.response;
 
 public class SignUpResponse {
-    private String token;
+    private String verificationCode;
 
-    public String getToken() {
-        return token;
+    public String getVerificationCode() {
+        return verificationCode;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
     }
 }
