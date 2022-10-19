@@ -11,7 +11,8 @@ create table user
     password text null,
     phone_number varchar(10) null,
     link_avatar text null,
-    token text null
+    uuid text null,
+    verification_code varchar(6) null
 );
 create table post
 (

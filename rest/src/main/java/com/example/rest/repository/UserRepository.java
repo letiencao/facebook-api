@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User,Integer> {
     User findByPhoneNumber(String phoneNumber);
     User save(User user);
+    User findByPhoneNumberAndPassword(String phoneNumber, String password);
 }
