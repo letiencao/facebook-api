@@ -9,4 +9,5 @@ public interface UserRepository extends JpaRepository<User,Integer> {
     User findByPhoneNumber(String phoneNumber);
     User save(User user);
     User findByPhoneNumberAndPassword(String phoneNumber, String password);
+    User findById(int id);
 }

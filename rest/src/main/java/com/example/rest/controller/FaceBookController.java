@@ -1,8 +1,10 @@
 package com.example.rest.controller;
 
 import com.example.rest.common.CommonResponse;
+import com.example.rest.model.response.CommentResponse;
 import com.example.rest.model.response.LoginResponse;
 import com.example.rest.model.response.SignUpResponse;
+import com.example.rest.service.ICommentService;
 import com.example.rest.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,9 @@ public class FaceBookController {
 
     @Autowired
     private IUserService userService;
+
+    @Autowired
+    private ICommentService commentService;
 
     @PostMapping(path = "/signup")
     public ResponseEntity<CommonResponse<SignUpResponse>> signUp(
@@ -62,13 +67,13 @@ public class FaceBookController {
     }
 
     @PostMapping(path = "/set-comment")
-    public ResponseEntity<CommonResponse<SignUpResponse>> like(
+    public ResponseEntity<CommonResponse<CommentResponse>> like(
             @RequestParam(name = "token") String token,
             @RequestParam(name = "id") String postId,
             @RequestParam(name = "comment") String comment,
             @RequestParam(name = "index") String index,
             @RequestParam(name = "count") String count) {
-        return null;
+        return new ResponseEntity<>(commentService.setComment(token,postId,comment, index, count),HttpStatus.OK);
     }
 
     @PostMapping(path = "/report-post")
