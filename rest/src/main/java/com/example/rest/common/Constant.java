@@ -45,6 +45,35 @@ public class Constant {
     public static final String COULD_NOT_PUBLISH_THIS_POST_MESSAGE = "Could not publish this post";
     public static final String LIMITED_ACCESS_MESSAGE = "Limited access";
 
+    /*TODO ROOT DIRECTORY*/
+    public static final String ROOT_DIRECTORY = "fb-api";
+    /*TODO IMAGE FILE TYPE*/
+    public static final String PNG = "png";
+    public static final String JPG = "jpg";
+    public static final String JPEG = "jpeg";
+    /*TODO VIDEO FILE TYPE*/
+    public static final String MP4 = "mp4";
+    public static final String FLV = "flv";
+    /*TODO BYTES CONVERT TO MB*/
+    public static final double CONVERSION_TO_MB = 0.00000095367432;
+//    /*TODO MILLISECONDS OF A MINUTE*/
+//    public static final long millisecondsOfAMinute = 60000;
+//    /*TODO MILLISECONDS OF A HOUR*/
+//    public static final long millisecondsOfAHour = 3600000;
+//    /*TODO MILLISECONDS OF A DAY*/
+//    public static final long millisecondsOfADay = 86400000;
+//    /*TODO MILLISECONDS OF A MONTH*/
+//    public static final long millisecondsOfAMonth = 2592000000L;
+//    /*TODO MILLISECONDS OF A YEAR*/
+//    public static final long millisecondsOfAYear = 31104000000L;
+
+
+
+
+
+
+
+
 
 
 

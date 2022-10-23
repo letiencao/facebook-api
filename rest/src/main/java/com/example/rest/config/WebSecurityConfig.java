@@ -39,11 +39,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable();
-		http.authorizeRequests().antMatchers("/logout","/edit-post","/delete-post","/add-post","/report-post","/edit-post",
-				"/like","/set-comment").authenticated().anyRequest().permitAll();
-		
-//				"/api/v1/auth/send-code", "/swagger-ui.html").permitAll().anyRequest().authenticated();
-		http.addFilterBefore(getJwtFilter(), UsernamePasswordAuthenticationFilter.class);
+//		http.authorizeRequests().antMatchers("/logout","/edit-post","/delete-post","/add-post","/report-post","/edit-post",
+//				"/like","/set-comment").authenticated().anyRequest().permitAll();
+//
+////				"/api/v1/auth/send-code", "/swagger-ui.html").permitAll().anyRequest().authenticated();
+//		http.addFilterBefore(getJwtFilter(), UsernamePasswordAuthenticationFilter.class);
 
 	}
 }

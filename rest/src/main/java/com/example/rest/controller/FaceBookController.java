@@ -1,8 +1,10 @@
 package com.example.rest.controller;
 
 import com.example.rest.common.CommonResponse;
+import com.example.rest.model.response.post.AddPostResponse;
 import com.example.rest.model.response.LoginResponse;
 import com.example.rest.model.response.SignUpResponse;
+import com.example.rest.service.IPostService;
 import com.example.rest.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,12 +12,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+@CrossOrigin
 @RestController
 @RequestMapping(path = "/")
 public class FaceBookController {
 
     @Autowired
     private IUserService userService;
+    @Autowired
+    private IPostService postService;
 
     @PostMapping(path = "/signup")
     public ResponseEntity<CommonResponse<SignUpResponse>> signUp(
@@ -40,13 +45,13 @@ public class FaceBookController {
     }
 
     @PostMapping(path = "/add-post")
-    public ResponseEntity<CommonResponse<SignUpResponse>> addPost(
+    public ResponseEntity<CommonResponse<AddPostResponse>> addPost(
             @RequestParam(name = "token") String token,
             @RequestParam(name = "image") MultipartFile[] image,
             @RequestParam(name = "video") MultipartFile video,
             @RequestParam(name = "described") String described,
-            @RequestParam(name = "status") String status) {
-        return null;
+            @RequestParam(name = "status") String status) throws Exception {
+        return new ResponseEntity<>(postService.addPost(token,image,video,described,status),HttpStatus.OK);
     }
 
     @PostMapping(path = "/delete-post")

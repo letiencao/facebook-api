@@ -2,21 +2,16 @@ package com.example.rest.security;
 
 import java.util.Date;
 
+import io.jsonwebtoken.*;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
 public class JwtProvider {
 	// Đoạn JWT_SECRET này là bí mật, chỉ có phía server biết
-	private final String JWT_SECRET = "letiencao28072000";
+	private final String JWT_SECRET = "Bank@2000";
 
 	// Thời gian có hiệu lực của chuỗi jwt
 	private final long ACCESS_JWT_EXPIRATION = 86400000L;//1 day
@@ -25,11 +20,14 @@ public class JwtProvider {
 
 	// Tạo ra jwt từ thông tin user
 	public String generateAccessToken(String phoneNumber) {
-		Date now = new Date();
-		Date expiryDate = new Date(now.getTime() + ACCESS_JWT_EXPIRATION);
-		// Tạo chuỗi json web token từ username của user.
-		return Jwts.builder().setSubject(phoneNumber).setIssuedAt(now).setExpiration(expiryDate)
-				.signWith(SignatureAlgorithm.HS512, JWT_SECRET).compact();
+		return Jwts.builder().setSubject(phoneNumber).setIssuedAt(new Date())
+				.setExpiration(new Date((new Date()).getTime() + ACCESS_JWT_EXPIRATION)).signWith(SignatureAlgorithm.HS512, JWT_SECRET)
+				.compact();
+	}
+	public String generateTokenFromUsername(String username) {
+		return Jwts.builder().setSubject(username).setIssuedAt(new Date())
+				.setExpiration(new Date((new Date()).getTime() + ACCESS_JWT_EXPIRATION)).signWith(SignatureAlgorithm.HS512, JWT_SECRET)
+				.compact();
 	}
 
 //	public String generateRefreshToken(String email) {
@@ -55,9 +53,10 @@ public class JwtProvider {
 	public boolean validateToken(String authToken) {
 		System.out.println("Token = " + authToken);
 		try {
-			Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(authToken);
+			Jws<Claims> jwtParser = Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(authToken);
 			return true;
 		} catch (MalformedJwtException ex) {
+			System.out.println(ex.getMessage());
 			log.error("Invalid JWT token");
 		} catch (ExpiredJwtException ex) {
 			log.error("Expired JWT token");
