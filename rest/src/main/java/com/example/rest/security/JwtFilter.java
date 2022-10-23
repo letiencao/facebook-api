@@ -32,8 +32,7 @@ public class JwtFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		try {
-			String token = commonService.getTokenFromRequest(request);
-			System.out.println("Hello ====================================================== ");
+			String token = request.getHeader("Authorization");
 			if (token != null && jwtProvider.validateToken(token)) {
 				String phoneNumber = jwtProvider.getPhoneNumberFromJWT(token);
 				UserDetails userDetails = userService.loadUserByUsername(phoneNumber);

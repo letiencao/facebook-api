@@ -9,8 +9,10 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment,Integer> {
 
+
     List<Comment> findByPostId(int postId); // tra ra danh sanh comment post id
 
     Comment save(Comment comment);
+
 
 }
