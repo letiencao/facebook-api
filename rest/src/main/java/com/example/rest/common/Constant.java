@@ -44,6 +44,9 @@ public class Constant {
     public static final String ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_MESSAGE = "Action has been done previously by this user";
     public static final String COULD_NOT_PUBLISH_THIS_POST_MESSAGE = "Could not publish this post";
     public static final String LIMITED_ACCESS_MESSAGE = "Limited access";
+    public static final boolean IS_DELETED = true;
+    public static final boolean IS_NOT_DELETED = false;
+
 
     /*TODO ROOT DIRECTORY*/
     public static final String ROOT_DIRECTORY = "fb-api";

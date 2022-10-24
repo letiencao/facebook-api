@@ -5,12 +5,20 @@ import com.example.rest.common.CommonService;
 import com.example.rest.common.Constant;
 import com.example.rest.model.entity.File;
 import com.example.rest.model.entity.Post;
+import com.example.rest.model.entity.User;
+import com.example.rest.model.mapper.PostMapper;
+import com.example.rest.model.mapper.UserMapper;
 import com.example.rest.model.response.post.AddPostResponse;
 import com.example.rest.model.response.post.GetPostResponse;
+import com.example.rest.model.response.posts.AuthorResponse;
+import com.example.rest.model.response.posts.DataResponse;
+import com.example.rest.model.response.posts.PostsResponse;
 import com.example.rest.repository.*;
 import com.example.rest.service.IPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -20,6 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService implements IPostService {
@@ -35,6 +45,10 @@ public class PostService implements IPostService {
     private CommentRepository commentRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PostMapper postMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     //tạo folder trong project để lưu file nếu chưa có
     protected static void createDirectoryIfItDoesntExist(String dir) {
@@ -80,7 +94,6 @@ public class PostService implements IPostService {
             //Get user Id from token
             int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
             if (userId > 0) {
-
                 Post post = postRepository.save(setCommonPostInfo(userId, described));
                 if (post != null && post.getId() > 0) {
                     if (image.length > 0 && image.length < 4) { //xem lại
@@ -151,6 +164,110 @@ public class PostService implements IPostService {
         return null;
     }
 
+    /**
+     * Get list-posts
+     *
+     * @param token
+     * @param user_id
+     * @param in_campaign
+     * @param campaign_id
+     * @param latitude
+     * @param longitude
+     * @param last_id
+     * @param index
+     * @param count
+     * @return
+     */
+    @Override
+    public CommonResponse<DataResponse> getListPosts(String token, String user_id, String in_campaign, String campaign_id, String latitude, String longitude, String last_id, String index, String count) {
+        CommonResponse<DataResponse> commonResponse = new CommonResponse();
+        this.validateParamsGetPosts(token, user_id, in_campaign, campaign_id, latitude, longitude, last_id, index, count);
+
+        //last_id of post not found
+        if (!StringUtils.isEmpty(last_id)) {
+            Post postInDB = postRepository.findById(Integer.parseInt(last_id));
+            if (postInDB == null) {
+                return new CommonResponse(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.POST_IS_NOT_EXISTED_MESSAGE, null);
+            }
+        }
+
+        //validate token and get UserId
+        if (!StringUtils.isEmpty(user_id)) {
+            int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
+            if (userId < 0) {
+                return new CommonResponse(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_TYPE_IS_INVALID_MESSAGE, null);
+            }
+        }
+        if (StringUtils.isEmpty(count)) {
+            count = String.valueOf(20);
+        }
+        if (StringUtils.isEmpty(index)) {
+            index = String.valueOf(1);
+        }
+        //create datas for Client's response
+        List<DataResponse> dataResponses = new ArrayList<>();
+
+        //get files
+        List<File> files = new ArrayList<>();
+
+        //get authors
+        List<AuthorResponse> authorResponses = new ArrayList<>();
+        List<User> usersInDB = userRepository.findAll();
+
+        //get posts
+        List<Post> postsInDB = postRepository.findAll();
+        List<PostsResponse> posts = new ArrayList<>();
+
+        //convert Posts to PostResponse
+        if (!CollectionUtils.isEmpty(postsInDB)) {
+            for (Post post : postsInDB
+            ) {
+                posts.add(postMapper.toResponse(post));
+            }
+        }
+        //add datas to PostResponses
+        if (!CollectionUtils.isEmpty(posts)) {
+            for (PostsResponse postsResponse : posts
+            ) {
+                if (!CollectionUtils.isEmpty(files)) {
+                    //get files by postId
+                    List<File> fileWithUser = files.stream().filter(item -> item.getPostId() == (Integer.parseInt(postsResponse.getId()))).collect(Collectors.toList());
+                    //convert file to video or images
+                    if (!CollectionUtils.isEmpty(fileWithUser)) {
+                        continue;
+                    }
+                }
+                //get author by postId
+                if (!CollectionUtils.isEmpty(usersInDB)) {
+                    User userInDb = usersInDB.stream().filter(item -> item.getId() == Integer.parseInt(postsResponse.getUser_id())).findAny().orElse(null);
+                    AuthorResponse authorResponse = userMapper.toResponse(userInDb);
+                    authorResponse.setOnline("online");
+                    postsResponse.setAuthor(authorResponse);
+                }
+            }
+        }
+        DataResponse dataResponse = new DataResponse();
+        dataResponse.setPosts(posts);
+        dataResponse.setNew_items("test-set-new-item");
+        dataResponse.setLast_id("test-set-last-id");
+        dataResponses.add(dataResponse);
+        //return common-response
+        commonResponse.setData(dataResponses);
+        commonResponse.setMessage(Constant.OK_MESSAGE);
+        commonResponse.setCode(Constant.OK_CODE);
+        return commonResponse;
+    }
+
+    /**
+     * Validate input params
+     *
+     * @return: null
+     */
+    private CommonResponse<DataResponse> validateParamsGetPosts(String token, String user_id, String in_campaign, String campaign_id, String latitude, String longitude, String last_id, String index, String count) {
+
+        return null;
+    }
+
     //Tính dung lượng của mảng image
     private long getImageFileSize(MultipartFile[] image) throws Exception {
         long imageFileSỉze = 0;
@@ -194,7 +311,7 @@ public class PostService implements IPostService {
     private boolean checkVideoFileTypeValid(String fileName) {
         int length = fileName.length();
         String videoNameTrim = fileName.substring(fileName.indexOf(".") + 1, length);
-        if(videoNameTrim.equalsIgnoreCase(Constant.MP4) || videoNameTrim.equalsIgnoreCase(Constant.FLV)){
+        if (videoNameTrim.equalsIgnoreCase(Constant.MP4) || videoNameTrim.equalsIgnoreCase(Constant.FLV)) {
             return true;
         }
         return false;
