@@ -15,7 +15,8 @@ public class PostMapper {
     public PostsResponse toResponse(Post post) {
         PostsResponse postsResponse = new PostsResponse();
         postsResponse.setId(String.valueOf(post.getId()));
-        postsResponse.setComment(post.getContent());
+        postsResponse.setComment(String.valueOf(10));
+        postsResponse.setContent(post.getContent());
         //converto to image or video
         postsResponse.setUser_id(String.valueOf(post.getUserId()));
         return postsResponse;

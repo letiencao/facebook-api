@@ -6,6 +6,7 @@ public class PostsResponse {
     private String id;
     private String name;
     //check lại kiểu trả về
+    private String content;
     private List<String> image;
     //check lại kiểu trả về
     private List<VideoResponse> video;
@@ -23,9 +24,10 @@ public class PostsResponse {
     private String campaign_id;
     private String user_id;
 
-    public PostsResponse(String id, String name, List<String> image, List<VideoResponse> video, String described, String created, String like, String comment, String is_like, String is_block, String can_comment, String banned, String state, AuthorResponse author, String in_campaign, String campaign_id, String user_id) {
+    public PostsResponse(String id, String name, String content, List<String> image, List<VideoResponse> video, String described, String created, String like, String comment, String is_like, String is_block, String can_comment, String banned, String state, AuthorResponse author, String in_campaign, String campaign_id, String user_id) {
         this.id = id;
         this.name = name;
+        this.content = content;
         this.image = image;
         this.video = video;
         this.described = described;
@@ -60,6 +62,14 @@ public class PostsResponse {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public List<String> getImage() {

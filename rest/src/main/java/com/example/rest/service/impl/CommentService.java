@@ -23,7 +23,6 @@ public class CommentService implements ICommentService {
 
     @Autowired
     private PostRepository postRepository;
-
     @Autowired
     private CommentRepository commentRepository;
     @Autowired

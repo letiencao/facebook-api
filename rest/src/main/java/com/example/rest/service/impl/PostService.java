@@ -13,8 +13,10 @@ import com.example.rest.model.response.post.GetPostResponse;
 import com.example.rest.model.response.posts.AuthorResponse;
 import com.example.rest.model.response.posts.DataResponse;
 import com.example.rest.model.response.posts.PostsResponse;
+import com.example.rest.model.response.posts.VideoResponse;
 import com.example.rest.repository.*;
 import com.example.rest.service.IPostService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -32,6 +34,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class PostService implements IPostService {
     @Autowired
     private CommonService commonService;
@@ -49,6 +52,10 @@ public class PostService implements IPostService {
     private PostMapper postMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private FileService fileService;
+    @Autowired
+    private PostsRepository postsRepository;
 
     //tạo folder trong project để lưu file nếu chưa có
     protected static void createDirectoryIfItDoesntExist(String dir) {
@@ -80,8 +87,13 @@ public class PostService implements IPostService {
             if ((image.length > 4)) {
                 return new CommonResponse(Constant.MAXIMUM_NUMBER_OF_IMAGES_CODE, Constant.MAXIMUM_NUMBER_OF_IMAGES_MESSAGE, null);
             }
+            //Add file name into List to trim
+            List<String> fileNames = new ArrayList<>();
+            for (int i = 0; i < image.length; i++) {
+                fileNames.add(image[i].getOriginalFilename());
+            }
             //truyền image/video sai định dạng || nội dung bài viết quá 500 từ
-            if (!checkImageFileTypeValid(image) || !checkVideoFileTypeValid(video.getOriginalFilename()) || commonService.countWordInString(described) > 500) {
+            if ((image.length > 0 && !checkListImageFilesTypeValid(fileNames)) || (!video.isEmpty() && !checkVideoFileTypeValid(video.getOriginalFilename()) || commonService.countWordInString(described) > 500)) {
                 return new CommonResponse(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE, null);
             }
             //Check quá dung lượng của image và video
@@ -96,7 +108,7 @@ public class PostService implements IPostService {
             if (userId > 0) {
                 Post post = postRepository.save(setCommonPostInfo(userId, described));
                 if (post != null && post.getId() > 0) {
-                    if (image.length > 0 && image.length < 4) { //xem lại
+                    if (image.length > 0 && image.length <= 4) { //xem lại
                         for (int i = 0; i < image.length; i++) {
                             saveFile(image[i], Paths.get(Constant.ROOT_DIRECTORY));
                             fileRepository.save(setCommonFileInfo(image[i].getOriginalFilename(), post.getId()));
@@ -116,7 +128,6 @@ public class PostService implements IPostService {
             }
         } catch (Exception e) {
             return new CommonResponse(Constant.EXCEPTION_ERROR_CODE, Constant.EXCEPTION_ERROR_MESSAGE, null);
-
         }
         return new CommonResponse(Constant.COULD_NOT_PUBLISH_THIS_POST_CODE, Constant.COULD_NOT_PUBLISH_THIS_POST_MESSAGE, null);
     }
@@ -192,12 +203,11 @@ public class PostService implements IPostService {
         }
 
         //validate token and get UserId
-        if (!StringUtils.isEmpty(user_id)) {
-            int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
-            if (userId < 0) {
-                return new CommonResponse(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_TYPE_IS_INVALID_MESSAGE, null);
-            }
+        int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
+        if (userId < 0) {
+            return new CommonResponse(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_TYPE_IS_INVALID_MESSAGE, null);
         }
+
         if (StringUtils.isEmpty(count)) {
             count = String.valueOf(20);
         }
@@ -208,42 +218,75 @@ public class PostService implements IPostService {
         List<DataResponse> dataResponses = new ArrayList<>();
 
         //get files
-        List<File> files = new ArrayList<>();
+        List<File> files = fileService.findAll();
+        if (CollectionUtils.isEmpty(files)) {
+            files = files.stream().filter(item -> item.isDeleted() == Constant.IS_NOT_DELETED).collect(Collectors.toList());
+        }
 
         //get authors
-        List<AuthorResponse> authorResponses = new ArrayList<>();
         List<User> usersInDB = userRepository.findAll();
+        if (!CollectionUtils.isEmpty(usersInDB)) {
+            usersInDB = usersInDB.stream().filter(item -> item.isDeleted() == Constant.IS_NOT_DELETED).collect(Collectors.toList());
+        }
 
         //get posts
-        List<Post> postsInDB = postRepository.findAll();
+        //TODO: paging
+        List<Post> postsInDB = postsRepository.findPostByAll(last_id, count,index);
+        //find post is not deleted
+        postsInDB = postsInDB.stream().filter(item -> item.isDeleted() == Constant.IS_NOT_DELETED).collect(Collectors.toList());
+
         List<PostsResponse> posts = new ArrayList<>();
 
         //convert Posts to PostResponse
         if (!CollectionUtils.isEmpty(postsInDB)) {
-            for (Post post : postsInDB
-            ) {
+            for (Post post : postsInDB) {
                 posts.add(postMapper.toResponse(post));
             }
         }
         //add datas to PostResponses
         if (!CollectionUtils.isEmpty(posts)) {
-            for (PostsResponse postsResponse : posts
-            ) {
-                if (!CollectionUtils.isEmpty(files)) {
-                    //get files by postId
-                    List<File> fileWithUser = files.stream().filter(item -> item.getPostId() == (Integer.parseInt(postsResponse.getId()))).collect(Collectors.toList());
-                    //convert file to video or images
-                    if (!CollectionUtils.isEmpty(fileWithUser)) {
-                        continue;
-                    }
-                }
+            for (PostsResponse postsResponse : posts) {
                 //get author by postId
                 if (!CollectionUtils.isEmpty(usersInDB)) {
-                    User userInDb = usersInDB.stream().filter(item -> item.getId() == Integer.parseInt(postsResponse.getUser_id())).findAny().orElse(null);
-                    AuthorResponse authorResponse = userMapper.toResponse(userInDb);
-                    authorResponse.setOnline("online");
-                    postsResponse.setAuthor(authorResponse);
+                    User userInDb = usersInDB.stream().filter(item -> (item.isDeleted() == Constant.IS_NOT_DELETED) && (item.getId() == Integer.parseInt(postsResponse.getUser_id()))).findAny().orElse(null);
+                    if (userInDb != null) {
+                        AuthorResponse authorResponse = userMapper.toResponse(userInDb);
+                        authorResponse.setOnline("online");
+                        //set to data return
+                        postsResponse.setAuthor(authorResponse);
+                    }
                 }
+
+                if (!CollectionUtils.isEmpty(files)) {
+                    //get files by postId
+                    List<File> fileWithPost = files.stream().filter(item -> item.isDeleted() == Constant.IS_NOT_DELETED && item.getPostId() == (Integer.parseInt(postsResponse.getId()))).collect(Collectors.toList());
+                    //convert file to video or images
+                    if (!CollectionUtils.isEmpty(fileWithPost)) {
+                        List<String> images = new ArrayList<>();
+                        List<VideoResponse> videoResponses = new ArrayList<>();
+                        for (File file : fileWithPost) {
+                            if (!StringUtils.isEmpty(file.getContent()) && this.checkImageFileTypeValid(file.getContent())) {
+                                images.add(file.getContent());
+                                //set to data return
+                                postsResponse.setImage(images);
+                                postsResponse.setVideo(null);
+                            } else if (!StringUtils.isEmpty(file.getContent()) && this.checkVideoFileTypeValid(file.getContent())) {
+                                VideoResponse videoResponse = new VideoResponse();
+                                videoResponse.setUrl(file.getContent());
+                                videoResponse.setThumb("example thump");
+                                //set to data return
+                                videoResponses.add(videoResponse);
+                                postsResponse.setVideo(videoResponses);
+                                postsResponse.setImage(null);
+                            } else {
+                                //list of Files null -> both image and video are null
+                                postsResponse.setImage(null);
+                                postsResponse.setVideo(null);
+                            }
+                        }
+                    }
+                }
+
             }
         }
         DataResponse dataResponse = new DataResponse();
@@ -264,6 +307,126 @@ public class PostService implements IPostService {
      * @return: null
      */
     private CommonResponse<DataResponse> validateParamsGetPosts(String token, String user_id, String in_campaign, String campaign_id, String latitude, String longitude, String last_id, String index, String count) {
+
+        return null;
+    }
+
+    @Override
+    public CommonResponse editPost(String token, String postId, String described, String status, MultipartFile[] image, List<String> imageIdsDeleted, List<String> imageIdsSort, MultipartFile video, MultipartFile thumb, String autoAccept, String autoBlock) throws Exception {
+
+        commonService.checkCommonValidate(token, postId);
+        //Lấy user id from token
+        String userId = (commonService.getUserIdFromToken(token).getData().get(0).getId());
+
+//        //size of list ảnh cần edit, và size of list imageSort, size of list id ảnh cần sửa != (y/c trùng nhau)
+//        if(image.length != imageIdsDeleted.size() || image.length != imageIdsSort.size() || imageIdsDeleted.size() != imageIdsSort.size()){
+//
+//        }
+//        imageIdsDeleted => phục vụ cho case muốn xóa ảnh
+//        image && imageIdsSort => phục vụ cho case update
+
+
+        //Case Success
+        //Lấy thông tin bài viết
+        Post post = postRepository.findById(Integer.parseInt(postId));
+        if (post == null) {
+            //return post ko tồn tại
+        }
+        //Lấy các file của post đó
+        List<File> files = fileRepository.findByPostId(post.getId());
+        //list image sort ,index > size của list ảnh đã đăng
+//        for(int i = 0;i < imageIdsSort.size();i++){
+//            int idSort = Integer.parseInt(imageIdsSort.get(i));
+//            if(idSort > files.size() - 1){
+//                //return lỗi
+//            }
+//        }
+        //Case xóa ảnh thành công
+        if (imageIdsDeleted != null && imageIdsDeleted.size() > 0) {
+            //Check các id ảnh muốn xóa => phải trùng với các id ảnh của bài post
+            for (int i = 0; i < imageIdsDeleted.size(); i++) {
+                int imageIdDeleted = Integer.parseInt(imageIdsDeleted.get(i));
+                for (int j = 0; j < files.size(); j++) {
+                    if (imageIdDeleted == files.get(j).getId()) {
+                        File file = files.get(j);
+                        deleteFile(file.getContent(), Path.of(Constant.ROOT_DIRECTORY));
+                        file.setModifiedBy(userId);
+                        file.setModifiedDate(System.currentTimeMillis());
+                        file.setDeleted(true);
+                        fileRepository.save(file);
+                        break;
+                    }
+                }
+            }
+        }
+
+        //Case update ảnh
+        //=> size của image = size của image_sort
+        if (image.length != imageIdsSort.size()) {
+            //return
+        }
+        //=> image_sort truyền lên thứ tự < 0 || lớn hơn size - 1
+        if (checkImageFileTypeValid(files.get(0).getContent()) && image.length > 0) {
+            for (int i = 0; i < imageIdsSort.size(); i++) {
+                int imageIndex = Integer.parseInt(imageIdsSort.get(i));
+                if (imageIndex < 0 || imageIndex > files.size() - 1) {
+
+                } else {
+                    //Trùng thì update tên file
+                    File file = files.get(i);
+                    deleteFile(file.getContent(), Path.of(Constant.ROOT_DIRECTORY));
+                    file.setModifiedBy(userId);
+                    file.setModifiedDate(System.currentTimeMillis());
+                    file.setDeleted(false);
+                    saveFile(image[i], Path.of(Constant.ROOT_DIRECTORY));
+                    file.setContent(image[i].getOriginalFilename());
+                    fileRepository.save(file);
+                }
+            }
+        } else if (checkVideoFileTypeValid(files.get(0).getContent()) && !video.isEmpty()) {
+
+        }
+
+
+        //Check các file này là file ảnh
+//        if(files == null || files.size() == 0){
+//
+//        }
+//        String theFirstFileName = files.get(0).getContent();
+//        if(checkImageFileTypeValid(theFirstFileName)){
+        //Nếu là image thì cho thay đổi image
+
+//            //Check các id ảnh muốn chỉnh sửa => phải trùng với các id ảnh của bài post
+//            for(int i = 0;i < imageIdsDeleted.size();i++){
+//                int imageId = Integer.parseInt(imageIdsDeleted.get(i));
+//                for(int j = 0;j < files.size();j++){
+//                    if(imageId != files.get(i).getId()){
+//                        //input id ảnh muốn sửa, không phải ảnh của bài
+//
+//                    }
+//                }
+//            }
+// => Size of imageIdsDeleted, imageIdsSort, image == nhau;
+        //Update File đúng vị trí
+//            [1,2];
+//            list<file> : id, tên file
+//            check trùng id thì update tên file và saveDB
+//            for(int i = 0;i < imageIdsSort.size();i++){
+//                int idUpdate = Integer.parseInt(imageIdsSort.get(i));
+//                for(int j = 0;j < files.size();j++){
+//                    if(idUpdate == files.get(j).getId()){
+//                        File file = files.get(j);
+//                        saveFile(image[i], Paths.get(Constant.ROOT_DIRECTORY));
+//                    }
+//                }
+//            }
+//
+//
+//
+//        }else{
+//            //File của bài viết là video
+//        }
+
 
         return null;
     }
@@ -289,32 +452,46 @@ public class PostService implements IPostService {
         return null;
     }
 
-    //Check định dạng image file phải dạng .png || .jpg || .jpeg
-    private boolean checkImageFileTypeValid(MultipartFile[] image) {
-        List<String> fileNames = new ArrayList<>();
-        //Add file name into List to trim
-        for (int i = 0; i < image.length; i++) {
-            fileNames.add(image[i].getOriginalFilename());
+    //delete file
+    private CommonResponse deleteFile(String fileName, Path rootLocation) throws IOException {
+        try {
+            Files.deleteIfExists(Path.of(rootLocation + "/" + fileName));
+        } catch (Exception e) {
+            return new CommonResponse(Constant.EXCEPTION_ERROR_CODE, Constant.EXCEPTION_ERROR_MESSAGE, null);
         }
+        return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
+    }
+
+    //Check định dạng list image files phải dạng .png || .jpg || .jpeg
+    private boolean checkListImageFilesTypeValid(List<String> fileNames) {
         //check file type valid
         for (String fileName : fileNames) {
-            int length = fileName.length();
-            String imageNameTrim = fileName.substring(fileName.indexOf(".") + 1, length);
-            if (!imageNameTrim.equalsIgnoreCase(Constant.PNG) && !imageNameTrim.equalsIgnoreCase(Constant.JPG) && !imageNameTrim.equalsIgnoreCase(Constant.JPEG)) {
+            if (!checkImageFileTypeValid(fileName)) {
                 return false;
             }
         }
         return true;
     }
 
+    //Check định dạng Image File phải dạng .png || .jpg || .jpeg
+    private boolean checkImageFileTypeValid(String fileName) {
+        int length = fileName.length();
+        char[] fileChar = fileName.toCharArray();
+        int indexDot = 0;
+        for (int i = 0; i < fileChar.length; i++) {
+            if (fileChar[i] == '.') {
+                indexDot = i;
+            }
+        }
+        String imageNameTrim = fileName.substring(indexDot + 1, length);
+        return imageNameTrim.equalsIgnoreCase(Constant.PNG) || imageNameTrim.equalsIgnoreCase(Constant.JPG) || imageNameTrim.equalsIgnoreCase(Constant.JPEG);
+    }
+
     //check định dạng video file phải ở dạng .mp4 || .flv
     private boolean checkVideoFileTypeValid(String fileName) {
         int length = fileName.length();
         String videoNameTrim = fileName.substring(fileName.indexOf(".") + 1, length);
-        if (videoNameTrim.equalsIgnoreCase(Constant.MP4) || videoNameTrim.equalsIgnoreCase(Constant.FLV)) {
-            return true;
-        }
-        return false;
+        return videoNameTrim.equalsIgnoreCase(Constant.MP4) || videoNameTrim.equalsIgnoreCase(Constant.FLV);
     }
 
     private File setCommonFileInfo(String content, int postId) {
