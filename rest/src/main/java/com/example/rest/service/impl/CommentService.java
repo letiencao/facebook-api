@@ -23,7 +23,6 @@ public class CommentService implements ICommentService {
 
     @Autowired
     private PostRepository postRepository;
-
     @Autowired
     private CommentRepository commentRepository;
     @Autowired
@@ -90,7 +89,7 @@ public class CommentService implements ICommentService {
 
             List<Poster> posters = new ArrayList<>();
             Poster poster = new Poster();
-            poster.setUsername(user.getPhoneNumber());
+            poster.setName(user.getName());
             poster.setAvatar(user.getLinkAvatar());
             poster.setId(String.valueOf(user.getId()));
             posters.add(poster);

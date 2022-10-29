@@ -10,6 +10,8 @@ import com.example.rest.model.response.SignUpResponse;
 import com.example.rest.repository.UserRepository;
 import com.example.rest.security.JwtProvider;
 import com.example.rest.service.IUserService;
+import lombok.AllArgsConstructor;
+import org.apache.catalina.core.ApplicationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -104,4 +106,5 @@ public class UserService implements IUserService, UserDetailsService {
 
         return user;
     }
+
 }
