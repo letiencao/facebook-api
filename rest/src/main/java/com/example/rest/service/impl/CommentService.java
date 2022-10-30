@@ -33,7 +33,7 @@ public class CommentService implements ICommentService {
 
     @Override
     public CommonResponse<CommentResponse> setComment(String token ,String id, String comment, String index, String count) {
-        commonService.checkCommonValidate(id, comment, index, count);
+        commonService.checkCommonValidate(token,id, comment, index, count);
 
 
         Post post = postRepository.findById(Integer.parseInt(id));
@@ -44,17 +44,7 @@ public class CommentService implements ICommentService {
         return new CommonResponse<>(Constant.POST_IS_NOT_EXISTED_CODE, Constant.POST_IS_NOT_EXISTED_MESSAGE, null);
     }
 
-    List<Comment> comments = commentRepository.findByPostId(Integer.parseInt(id));
-
-//    truyen vao sai index va count
-    if (Integer.parseInt(index) < 0 || Integer.parseInt(index) > comments.size() - 1 || Integer.parseInt(count) < 0 ){
-        return  new CommonResponse<>(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE, null);
-    }
-
-
-
-
-        int userId = 1; // sua lai sau (lay tu token)
+        int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
 
 
         //Chặn test case trả ra mã lỗi
@@ -68,6 +58,20 @@ public class CommentService implements ICommentService {
             return new CommonResponse(Constant.CAN_NOT_CONNECT_TO_DB_CODE, Constant.CAN_NOT_CONNECT_TO_DB_MESSAGE, null);
         }
 
+    List<Comment> comments = commentRepository.findByPostId(Integer.parseInt(id));
+    int sizeOfComments = comments.size();
+    if(sizeOfComments == 0){
+        return new CommonResponse<>(Constant.NO_DATA_OR_END_OF_LIST_DATA_CODE,Constant.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,null);
+    }
+//    truyen vao sai index va count
+    int indexInteger = Integer.parseInt(index);
+    int countInteger = Integer.parseInt(count);
+    if (indexInteger < 0 || indexInteger > sizeOfComments - 1 || countInteger <= 0
+            || indexInteger + countInteger > sizeOfComments){
+        return  new CommonResponse<>(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE, null);
+    }
+
+
 
 
 
@@ -76,8 +80,8 @@ public class CommentService implements ICommentService {
 
 
         List<CommentResponse> list = new ArrayList<>();
-
-        for(int i = 0;i < comments.size();i++){
+        //index = 1, count = 3 -> 1 2 3
+        for(int i = indexInteger;i < indexInteger + countInteger;i++){
             Comment commentEntity = comments.get(i);
             int userId1 = commentEntity.getUserId();
             User user = userRepository.findById(userId1); //Thông tin người comment
@@ -90,7 +94,7 @@ public class CommentService implements ICommentService {
 
             List<Poster> posters = new ArrayList<>();
             Poster poster = new Poster();
-            poster.setUsername(user.getPhoneNumber());
+            poster.setName(user.getName());
             poster.setAvatar(user.getLinkAvatar());
             poster.setId(String.valueOf(user.getId()));
             posters.add(poster);

@@ -10,4 +10,7 @@ public interface UserRepository extends JpaRepository<User,Integer> {
     User save(User user);
     User findByPhoneNumberAndPassword(String phoneNumber, String password);
     User findById(int id);
+
+
+
 }

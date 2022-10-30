@@ -2,9 +2,7 @@ package com.example.rest.controller;
 
 import com.example.rest.common.CommonResponse;
 
-import com.example.rest.model.response.CommentResponse;
-import com.example.rest.model.response.LoginResponse;
-import com.example.rest.model.response.SignUpResponse;
+import com.example.rest.model.response.*;
 import com.example.rest.service.ICommentService;
 
 import com.example.rest.model.response.post.AddPostResponse;
@@ -12,6 +10,7 @@ import com.example.rest.model.response.LoginResponse;
 import com.example.rest.model.response.SignUpResponse;
 import com.example.rest.service.IPostService;
 
+import com.example.rest.service.IReportService;
 import com.example.rest.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +31,9 @@ public class FaceBookController {
     @Autowired
     private ICommentService commentService;
 
+    @Autowired
+    private IReportService reportService;
+
     @PostMapping(path = "/signup")
     public ResponseEntity<CommonResponse<SignUpResponse>> signUp(
             @RequestParam(name = "phoneNumber") String phoneNumber,
@@ -48,10 +50,10 @@ public class FaceBookController {
         return new ResponseEntity<>(userService.login(phoneNumber,password,deviceId),HttpStatus.OK);
     }
 
-    @PostMapping(path = "/logout")
-    public ResponseEntity<CommonResponse<SignUpResponse>> logout(
+    @PostMapping(path = "/log-out")
+    public ResponseEntity<CommonResponse> logout(
             @RequestParam(name = "token") String token) {
-        return null;
+        return new ResponseEntity<>(userService.logout(token),HttpStatus.OK);
     }
 
     @PostMapping(path = "/add-post")
@@ -87,12 +89,12 @@ public class FaceBookController {
     }
 
     @PostMapping(path = "/report-post")
-    public ResponseEntity<CommonResponse<SignUpResponse>> reportPost(
+    public ResponseEntity<CommonResponse> reportPost(
             @RequestParam(name = "token") String token,
             @RequestParam(name = "id") String postId,
             @RequestParam(name = "subject") String subject,
             @RequestParam(name = "details") String details) {
-        return null;
+        return new ResponseEntity<>(reportService.reportPost(postId, token, subject, details),HttpStatus.OK);
     }
 
     @PostMapping(path = "/like")
