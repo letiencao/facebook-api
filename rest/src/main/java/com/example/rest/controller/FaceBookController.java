@@ -18,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.List;
+
 @CrossOrigin
 @RestController
 @RequestMapping(path = "/")
@@ -67,15 +70,25 @@ public class FaceBookController {
     }
 
     @PostMapping(path = "/delete-post")
-    public ResponseEntity<CommonResponse<SignUpResponse>> deletePost(
-            @RequestParam(name = "token") String token,@RequestParam(name = "id") String postId) {
-        return null;
+    public ResponseEntity<CommonResponse> deletePost(
+            @RequestParam(name = "token") String token,@RequestParam(name = "id") String postId) throws IOException {
+        return new ResponseEntity<>(postService.deletePost(token,postId),HttpStatus.OK);
     }
 
     @PostMapping(path = "/edit-post")
-    public ResponseEntity<CommonResponse<SignUpResponse>> editPost(
-            @RequestParam(name = "token") String token,@RequestParam(name = "id") String postId) {
-        return null;
+    public ResponseEntity<CommonResponse> editPost(
+            @RequestParam(name = "token") String token,
+            @RequestParam(name = "id") String postId,
+            @RequestParam(name = "described") String described,
+            @RequestParam(name = "status") String status,
+            @RequestParam(name = "image") MultipartFile[] newImageFiles,
+            @RequestParam(name = "image_del") List<String> imageIdsDeleted,
+            @RequestParam(name = "image_sort") List<String> imageIdsSort,
+            @RequestParam(name = "video") MultipartFile video,
+            @RequestParam(name = "thumb") MultipartFile thumb,
+            @RequestParam(name = "auto_accept") String autoAccept,
+            @RequestParam(name = "auto_block") String autoBlock) throws Exception {
+        return new ResponseEntity<>(postService.editPost(token,postId,described,status,newImageFiles,imageIdsDeleted,imageIdsSort,video,thumb,autoAccept,autoBlock),HttpStatus.OK);
     }
 
     @PostMapping(path = "/set-comment")
