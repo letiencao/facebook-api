@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @CrossOrigin
@@ -67,9 +68,9 @@ public class FaceBookController {
     }
 
     @PostMapping(path = "/delete-post")
-    public ResponseEntity<CommonResponse<SignUpResponse>> deletePost(
-            @RequestParam(name = "token") String token,@RequestParam(name = "id") String postId) {
-        return null;
+    public ResponseEntity<CommonResponse> deletePost(
+            @RequestParam(name = "token") String token,@RequestParam(name = "id") String postId) throws IOException {
+        return new ResponseEntity<>(postService.deletePost(token,postId),HttpStatus.OK);
     }
 
     @PostMapping(path = "/edit-post")
