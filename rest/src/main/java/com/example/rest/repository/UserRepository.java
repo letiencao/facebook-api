@@ -14,4 +14,7 @@ public interface UserRepository extends JpaRepository<User,Integer> {
     User findByPhoneNumberAndPassword(String phoneNumber, String password);
     @Query(value = "SELECT * FROM user WHERE user.id = :id AND user.deleted = false", nativeQuery = true)
     User findById(int id);
+
+
+
 }

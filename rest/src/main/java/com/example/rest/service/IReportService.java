@@ -1,9 +1,9 @@
 package com.example.rest.service;
 
 import com.example.rest.common.CommonResponse;
-import com.example.rest.model.response.ReportResponse;
+import com.example.rest.model.response.CommentResponse;
 
 public interface IReportService {
 
-    CommonResponse<ReportResponse> reportPost(String id, String token, String subject, String details);
+    CommonResponse reportPost(String id, String token, String subject, String details);
 }

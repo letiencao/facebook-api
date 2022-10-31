@@ -26,7 +26,16 @@ public class User extends BaseModel {
     @Column(name = "verification_code")
     private String verificationCode;
 
+    @Column(name = "token")
+    private String token;
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public String getName() {
         return name;

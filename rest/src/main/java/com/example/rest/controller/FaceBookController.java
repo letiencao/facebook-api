@@ -12,6 +12,7 @@ import com.example.rest.model.response.SignUpResponse;
 import com.example.rest.service.ILikeService;
 import com.example.rest.service.IPostService;
 
+import com.example.rest.service.IReportService;
 import com.example.rest.service.IUserService;
 import com.example.rest.service.impl.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 import java.util.Map;
@@ -42,6 +44,8 @@ public class FaceBookController {
 
     @Autowired
     ItemService itemService;
+    @Autowired
+    private IReportService reportService;
 
     @PostMapping(path = "/signup")
     public ResponseEntity<CommonResponse<SignUpResponse>> signUp(
@@ -59,10 +63,10 @@ public class FaceBookController {
         return new ResponseEntity<>(userService.login(phoneNumber, password, deviceId), HttpStatus.OK);
     }
 
-    @PostMapping(path = "/logout")
-    public ResponseEntity<CommonResponse<SignUpResponse>> logout(
+    @PostMapping(path = "/log-out")
+    public ResponseEntity<CommonResponse> logout(
             @RequestParam(name = "token") String token) {
-        return null;
+        return new ResponseEntity<>(userService.logout(token),HttpStatus.OK);
     }
 
     @PostMapping(path = "/add-post")
@@ -76,9 +80,9 @@ public class FaceBookController {
     }
 
     @PostMapping(path = "/delete-post")
-    public ResponseEntity<CommonResponse<SignUpResponse>> deletePost(
-            @RequestParam(name = "token") String token, @RequestParam(name = "id") String postId) {
-        return null;
+    public ResponseEntity<CommonResponse> deletePost(
+            @RequestParam(name = "token") String token,@RequestParam(name = "id") String postId) throws IOException {
+        return new ResponseEntity<>(postService.deletePost(token,postId),HttpStatus.OK);
     }
 
     @PostMapping(path = "/edit-post")
@@ -108,12 +112,12 @@ public class FaceBookController {
     }
 
     @PostMapping(path = "/report-post")
-    public ResponseEntity<CommonResponse<SignUpResponse>> reportPost(
+    public ResponseEntity<CommonResponse> reportPost(
             @RequestParam(name = "token") String token,
             @RequestParam(name = "id") String postId,
             @RequestParam(name = "subject") String subject,
             @RequestParam(name = "details") String details) {
-        return null;
+        return new ResponseEntity<>(reportService.reportPost(postId, token, subject, details),HttpStatus.OK);
     }
 
     @PostMapping(path = "/like")

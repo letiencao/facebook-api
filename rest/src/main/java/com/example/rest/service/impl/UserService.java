@@ -17,7 +17,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +69,10 @@ public class UserService implements IUserService, UserDetailsService {
         //Check common validate ~ check những trường bắt buộc đều phải khác null -> Check từng trường hợp chi tiết
         commonService.checkCommonValidate(phoneNumber,password,deviceId);
 
+        if (phoneNumber == password){
+            return new CommonResponse(Constant.PARAMETER_VALUE_IS_INVALID_CODE , Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE, null);
+        }
+
         //Check phone number validate
         commonService.checkPhoneNumberValid(phoneNumber);
         //Check password validate
@@ -77,12 +80,16 @@ public class UserService implements IUserService, UserDetailsService {
 
         User user = userRepository.findByPhoneNumberAndPassword(phoneNumber,password);
         String token = jwtProvider.generateAccessToken(phoneNumber);
+
         if(user == null){
             return new CommonResponse(Constant.USER_IS_NOT_VALIDATED_CODE,Constant.USER_IS_NOT_VALIDATED_MESSAGE,null);
         }
+
+
         user.setUuid(deviceId);
         user.setModifiedBy(phoneNumber);
         user.setModifiedDate(System.currentTimeMillis());
+        user.setToken(token);
         userRepository.save(user);
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setId(String.valueOf(user.getId()));
@@ -94,6 +101,32 @@ public class UserService implements IUserService, UserDetailsService {
         commonResponse.setMessage(Constant.OK_MESSAGE);
         commonResponse.setCode(Constant.OK_CODE);
         return commonResponse;
+    }
+
+    @Override
+    public CommonResponse logout(String token){
+        commonService.checkCommonValidate(token);
+
+
+        int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
+
+        if (userId == 0){
+            return new CommonResponse(Constant.USER_IS_NOT_VALIDATED_CODE, Constant.USER_IS_NOT_VALIDATED_MESSAGE, null);
+        }
+
+        User user = userRepository.findById(userId);
+
+        if (user == null){
+            return new CommonResponse(Constant.USER_IS_NOT_VALIDATED_CODE, Constant.USER_IS_NOT_VALIDATED_MESSAGE, null);
+        }
+
+        user.setToken("");
+        user.setModifiedBy(String.valueOf(userId));
+        user.setModifiedDate(System.currentTimeMillis());
+        userRepository.save(user);
+
+
+        return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
     }
 
     //Set các thông tin chung khi thêm user

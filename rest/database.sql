@@ -12,7 +12,8 @@ create table user
     phone_number varchar(10) null,
     link_avatar text null,
     uuid text null,
-    verification_code varchar(6) null
+    verification_code varchar(6) null,
+    token nvarchar(255) null
 );
 create table post
 (
@@ -80,5 +81,16 @@ create table file
     modified_date bigint null,
     modified_by nvarchar(255) null,
     content longtext null,
+    post_id int null
+);
+create table report
+(
+    id int not null primary key auto_increment,
+    deleted bool null,
+    created_date bigint null,
+    created_by nvarchar(255) null,
+    modified_date bigint null,
+    modified_by nvarchar(255) null,
+    user_id int null,
     post_id int null
 );
