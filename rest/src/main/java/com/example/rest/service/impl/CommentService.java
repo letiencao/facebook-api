@@ -71,10 +71,6 @@ public class CommentService implements ICommentService {
     }
 
 
-
-
-
-
         //Trả ra dữ liệu trường hợp thành công
 
 
