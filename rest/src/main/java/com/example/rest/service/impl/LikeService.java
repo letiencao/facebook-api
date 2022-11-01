@@ -30,13 +30,12 @@ public class LikeService implements ILikeService {
         //validate token and findUserById
         int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
         //findPostById
-        if (StringUtils.isEmpty(id) || StringUtils.isEmpty(postRepository.findById(Integer.parseInt(id)))) {
+        if (StringUtils.isEmpty(id) || postRepository.findById(Integer.parseInt(id)) == null) {
             return new CommonResponse(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_TYPE_IS_INVALID_MESSAGE, null);
         }
         if (userId < 0) {
             return new CommonResponse(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_TYPE_IS_INVALID_MESSAGE, null);
         }
-        int numberSuccess = 0;
         //like lần thứ 2 -> xóa like hiện tại
         Likes likeInDB = likesRepository.findByUserIdAndPostId(userId, Integer.parseInt(id));
         if (likeInDB != null) {

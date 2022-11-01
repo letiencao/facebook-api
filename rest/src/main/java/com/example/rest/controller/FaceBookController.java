@@ -135,7 +135,7 @@ public class FaceBookController {
             @RequestParam(required = false, name = "latitude") String latitude,
             @RequestParam(required = false, name = "longitude") String longitude,
             @RequestParam(required = false, name = "last_id") String last_id,
-            @RequestParam(defaultValue = "1", required = false, name = "index") String index,
+            @RequestParam(defaultValue = "0", required = false, name = "index") String index,
             @RequestParam(defaultValue = "20", required = false, name = "count") String count) {
         return new ResponseEntity<>(postService.getListPosts(token, user_id, in_campaign, campaign_id, latitude, longitude, last_id, index, count), HttpStatus.OK);
     }

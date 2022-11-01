@@ -4,6 +4,7 @@ import com.example.rest.common.CommonResponse;
 import com.example.rest.common.CommonService;
 import com.example.rest.common.Constant;
 import com.example.rest.model.entity.File;
+import com.example.rest.model.entity.Likes;
 import com.example.rest.model.entity.Post;
 import com.example.rest.model.entity.User;
 import com.example.rest.model.mapper.PostMapper;
@@ -17,6 +18,7 @@ import com.example.rest.model.response.posts.VideoResponse;
 import com.example.rest.repository.*;
 import com.example.rest.service.IPostService;
 import lombok.AllArgsConstructor;
+import org.apache.logging.log4j.util.StringBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -56,6 +58,7 @@ public class PostService implements IPostService {
     private FileService fileService;
     @Autowired
     private PostsRepository postsRepository;
+
 
     //tạo folder trong project để lưu file nếu chưa có
     protected static void createDirectoryIfItDoesntExist(String dir) {
@@ -123,14 +126,14 @@ public class PostService implements IPostService {
         }
 
         //Xóa post -> isDeleted = true
-        try{
+        try {
             post.setDeleted(true);
             post.setModifiedDate(System.currentTimeMillis());
             post.setModifiedBy(userId);
             postRepository.save(post);
             //Xóa File của post
             List<File> files = fileRepository.findByPostId(post.getId());
-            for(int i = 0;i < files.size();i++){
+            for (int i = 0; i < files.size(); i++) {
                 File file = files.get(i);
                 deleteFile(file.getContent(), Path.of(Constant.ROOT_DIRECTORY));
                 file.setDeleted(true);
@@ -138,10 +141,10 @@ public class PostService implements IPostService {
                 file.setModifiedDate(System.currentTimeMillis());
                 fileRepository.save(file);
             }
-        }catch (Exception e){
-            return new CommonResponse(Constant.CAN_NOT_CONNECT_TO_DB_CODE,Constant.CAN_NOT_CONNECT_TO_DB_MESSAGE,null);
+        } catch (Exception e) {
+            return new CommonResponse(Constant.CAN_NOT_CONNECT_TO_DB_CODE, Constant.CAN_NOT_CONNECT_TO_DB_MESSAGE, null);
         }
-        return new CommonResponse(Constant.OK_CODE,Constant.OK_MESSAGE,null);
+        return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
     }
 
     /**
@@ -161,7 +164,7 @@ public class PostService implements IPostService {
     @Override
     public CommonResponse<DataResponse> getListPosts(String token, String user_id, String in_campaign, String campaign_id, String latitude, String longitude, String last_id, String index, String count) {
         CommonResponse<DataResponse> commonResponse = new CommonResponse();
-        this.validateParamsGetPosts(token, user_id, in_campaign, campaign_id, latitude, longitude, last_id, index, count);
+//        this.validateParamsGetPosts(token, user_id, in_campaign, campaign_id, latitude, longitude, last_id, index, count);
 
         //last_id of post not found
         if (!StringUtils.isEmpty(last_id)) {
@@ -181,7 +184,7 @@ public class PostService implements IPostService {
             count = String.valueOf(20);
         }
         if (StringUtils.isEmpty(index)) {
-            index = String.valueOf(1);
+            index = String.valueOf(0);
         }
         //create datas for Client's response
         List<DataResponse> dataResponses = new ArrayList<>();
@@ -189,35 +192,41 @@ public class PostService implements IPostService {
         //get files
         List<File> files = fileService.findAll();
         if (CollectionUtils.isEmpty(files)) {
+            //filer file is not deleted
             files = files.stream().filter(item -> item.isDeleted() == Constant.IS_NOT_DELETED).collect(Collectors.toList());
         }
 
         //get authors
         List<User> usersInDB = userRepository.findAll();
         if (!CollectionUtils.isEmpty(usersInDB)) {
+            //filer user is not deleted
             usersInDB = usersInDB.stream().filter(item -> item.isDeleted() == Constant.IS_NOT_DELETED).collect(Collectors.toList());
         }
 
-        //get posts
-        //TODO: paging
-        List<Post> postsInDB = postsRepository.findPostByAll(last_id, count,index);
+        //get likes of post
+        List<Likes> likesOfPost = likesRepository.findAllLikes();
+
+        //get postsResponses
+        List<Post> postsInDB = postsRepository.findPostByAll(last_id, count, index);
         //find post is not deleted
         postsInDB = postsInDB.stream().filter(item -> item.isDeleted() == Constant.IS_NOT_DELETED).collect(Collectors.toList());
 
-        List<PostsResponse> posts = new ArrayList<>();
+        List<PostsResponse> postsResponses = new ArrayList<>();
 
         //convert Posts to PostResponse
         if (!CollectionUtils.isEmpty(postsInDB)) {
             for (Post post : postsInDB) {
-                posts.add(postMapper.toResponse(post));
+                postsResponses.add(postMapper.toResponse(post));
             }
         }
         //add datas to PostResponses
-        if (!CollectionUtils.isEmpty(posts)) {
-            for (PostsResponse postsResponse : posts) {
+        if (!CollectionUtils.isEmpty(postsResponses)) {
+            for (PostsResponse postsResponse : postsResponses) {
                 //get author by postId
                 if (!CollectionUtils.isEmpty(usersInDB)) {
-                    User userInDb = usersInDB.stream().filter(item -> (item.isDeleted() == Constant.IS_NOT_DELETED) && (item.getId() == Integer.parseInt(postsResponse.getUser_id()))).findAny().orElse(null);
+                    //find user by postId
+                    User userInDb = usersInDB.stream().filter(item -> (item.isDeleted() == Constant.IS_NOT_DELETED)
+                            && (item.getId() == Integer.parseInt(postsResponse.getUser_id()))).findAny().orElse(null);
                     if (userInDb != null) {
                         AuthorResponse authorResponse = userMapper.toResponse(userInDb);
                         authorResponse.setOnline("online");
@@ -228,18 +237,24 @@ public class PostService implements IPostService {
 
                 if (!CollectionUtils.isEmpty(files)) {
                     //get files by postId
-                    List<File> fileWithPost = files.stream().filter(item -> item.isDeleted() == Constant.IS_NOT_DELETED && item.getPostId() == (Integer.parseInt(postsResponse.getId()))).collect(Collectors.toList());
+                    List<File> fileWithPost = files.stream().filter(item -> item.isDeleted() == Constant.IS_NOT_DELETED
+                            && item.getPostId() == (Integer.parseInt(postsResponse.getId()))).collect(Collectors.toList());
                     //convert file to video or images
                     if (!CollectionUtils.isEmpty(fileWithPost)) {
                         List<String> images = new ArrayList<>();
                         List<VideoResponse> videoResponses = new ArrayList<>();
+                        //check all file belong to postId
                         for (File file : fileWithPost) {
-                            if (!StringUtils.isEmpty(file.getContent()) && this.checkImageFileTypeValid(file.getContent())) {
+                            //file is image
+                            if (!StringUtils.isEmpty(file.getContent())
+                                    && this.checkImageFileTypeValid(file.getContent())) {
                                 images.add(file.getContent());
                                 //set to data return
                                 postsResponse.setImage(images);
                                 postsResponse.setVideo(null);
-                            } else if (!StringUtils.isEmpty(file.getContent()) && this.checkVideoFileTypeValid(file.getContent())) {
+                                //file is video
+                            } else if (!StringUtils.isEmpty(file.getContent())
+                                    && this.checkVideoFileTypeValid(file.getContent())) {
                                 VideoResponse videoResponse = new VideoResponse();
                                 videoResponse.setUrl(file.getContent());
                                 videoResponse.setThumb("example thump");
@@ -255,14 +270,44 @@ public class PostService implements IPostService {
                         }
                     }
                 }
-
+                //get likes of posts
+                if (!CollectionUtils.isEmpty(likesOfPost) && !CollectionUtils.isEmpty(usersInDB)) {
+                    //find list likes of posts
+                    StringBuilder nameOfUserLikePost = new StringBuilder();
+                    List<Likes> likesOfEachPost = likesOfPost
+                            .stream()
+                            .filter(item -> item.getPostId().equals(postsResponse.getId()))
+                            .collect(Collectors.toList());
+                    //find list users who like this post
+                    for (User userLikePost : usersInDB
+                    ) {
+                        for (Likes likes : likesOfEachPost
+                        ) {
+                            if (userLikePost.getId() == likes.getUserId()) {
+                                nameOfUserLikePost.append(userLikePost.getName() + ",");
+                            }
+                        }
+                    }
+                    if (!StringUtils.isEmpty(nameOfUserLikePost)) {
+                        nameOfUserLikePost.deleteCharAt(nameOfUserLikePost.length() - 1);
+                        postsResponse.setName(String.valueOf(nameOfUserLikePost));
+                        postsResponse.setLike(String.valueOf(likesOfEachPost.size()));
+                    } else {
+                        postsResponse.setName(null);
+                        postsResponse.setLike(String.valueOf(0));
+                    }
+                }
             }
         }
         DataResponse dataResponse = new DataResponse();
-        dataResponse.setPosts(posts);
-        dataResponse.setNew_items("test-set-new-item");
-        dataResponse.setLast_id("test-set-last-id");
+        dataResponse.setPosts(postsResponses);
+        if (!StringUtils.isEmpty(last_id)) {
+            List<Post> newPosts = postRepository.findNewPosts(last_id);
+            dataResponse.setNew_items(String.valueOf(newPosts.size()));
+            dataResponse.setLast_id(last_id);
+        }
         dataResponses.add(dataResponse);
+
         //return common-response
         commonResponse.setData(dataResponses);
         commonResponse.setMessage(Constant.OK_MESSAGE);
@@ -327,7 +372,7 @@ public class PostService implements IPostService {
         files = fileRepository.findByPostId(Integer.parseInt(postId));
         //Case update ảnh
         //=> image_sort truyền lên thứ tự < 0 || lớn hơn size - 1
-        if(checkImageFileTypeValid(files.get(0).getContent()) && image.length > 0){
+        if (checkImageFileTypeValid(files.get(0).getContent()) && image.length > 0) {
             //Có ảnh mới cho sửa ảnh
             for (int i = 0; i < imageIdsSort.size(); i++) {
                 int imageIndex = Integer.parseInt(imageIdsSort.get(i));
