@@ -48,14 +48,14 @@ public class UserService implements IUserService, UserDetailsService {
         commonService.checkPasswordValid(password);
 
         if(loadUserByUsername(phoneNumber) != null){
-            return new CommonResponse(Constant.USER_EXISTED_CODE,Constant.USER_EXISTED_MESSAGE,null);
+            throw new CommonException(Constant.USER_EXISTED_CODE,Constant.USER_EXISTED_MESSAGE);
         }
 //        String token = jwtProvider.generateAccessToken(phoneNumber,uuid);
         User user = setCommonUserInfo(phoneNumber);
         user.setPhoneNumber(phoneNumber);
         user.setPassword(password);
         if(userRepository.save(user) == null){
-            return new CommonResponse(Constant.EXCEPTION_ERROR_CODE,Constant.EXCEPTION_ERROR_MESSAGE,null);
+            throw new CommonException(Constant.EXCEPTION_ERROR_CODE,Constant.EXCEPTION_ERROR_MESSAGE);
         }
         List<SignUpResponse> list = new ArrayList<>();
         SignUpResponse signUpResponse = new SignUpResponse();
@@ -71,7 +71,7 @@ public class UserService implements IUserService, UserDetailsService {
         commonService.checkCommonValidate(phoneNumber,password,deviceId);
 
         if (phoneNumber == password){
-            return new CommonResponse(Constant.PARAMETER_VALUE_IS_INVALID_CODE , Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE, null);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE , Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
         }
 
         //Check phone number validate
@@ -83,7 +83,7 @@ public class UserService implements IUserService, UserDetailsService {
         String token = jwtProvider.generateAccessToken(phoneNumber);
 
         if(user == null){
-            return new CommonResponse(Constant.USER_IS_NOT_VALIDATED_CODE,Constant.USER_IS_NOT_VALIDATED_MESSAGE,null);
+            throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE,Constant.USER_IS_NOT_VALIDATED_MESSAGE);
         }
 
 
@@ -109,16 +109,16 @@ public class UserService implements IUserService, UserDetailsService {
         commonService.checkCommonValidate(token);
 
 
-        int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
+        int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
 
         if (userId == 0){
-            return new CommonResponse(Constant.USER_IS_NOT_VALIDATED_CODE, Constant.USER_IS_NOT_VALIDATED_MESSAGE, null);
+            throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE, Constant.USER_IS_NOT_VALIDATED_MESSAGE);
         }
 
         User user = userRepository.findById(userId);
 
         if (user == null){
-            return new CommonResponse(Constant.USER_IS_NOT_VALIDATED_CODE, Constant.USER_IS_NOT_VALIDATED_MESSAGE, null);
+            throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE, Constant.USER_IS_NOT_VALIDATED_MESSAGE);
         }
 
         user.setToken("");

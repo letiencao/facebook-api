@@ -2,17 +2,13 @@ package com.example.rest.controller;
 
 import com.example.rest.common.CommonException;
 import com.example.rest.common.CommonResponse;
-
-import com.example.rest.model.response.*;
-import com.example.rest.service.ICommentService;
-
-import com.example.rest.model.response.post.AddPostResponse;
+import com.example.rest.model.response.CommentResponse;
 import com.example.rest.model.response.LoginResponse;
 import com.example.rest.model.response.SignUpResponse;
-import com.example.rest.service.IPostService;
-
-import com.example.rest.service.IReportService;
-import com.example.rest.service.IUserService;
+import com.example.rest.model.response.post.AddPostResponse;
+import com.example.rest.model.response.posts.DataResponse;
+import com.example.rest.service.*;
+import com.example.rest.service.impl.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +32,10 @@ public class FaceBookController {
     private ICommentService commentService;
 
     @Autowired
+    ItemService itemService;
+    @Autowired
+    private ILikeService iLikeService;
+    @Autowired
     private IReportService reportService;
 
     @PostMapping(path = "/signup")
@@ -43,7 +43,7 @@ public class FaceBookController {
             @RequestParam(name = "phoneNumber") String phoneNumber,
             @RequestParam(name = "password") String password,
             @RequestParam(name = "uuid") String uuid) throws CommonException {
-        return new ResponseEntity<>(userService.signUp(phoneNumber,password,uuid), HttpStatus.OK);
+        return new ResponseEntity<>(userService.signUp(phoneNumber, password, uuid), HttpStatus.OK);
     }
 
     @PostMapping(path = "/login")
@@ -51,7 +51,7 @@ public class FaceBookController {
             @RequestParam(name = "phoneNumber") String phoneNumber,
             @RequestParam(name = "password") String password,
             @RequestParam(name = "deviceId") String deviceId) throws CommonException {
-        return new ResponseEntity<>(userService.login(phoneNumber,password,deviceId),HttpStatus.OK);
+        return new ResponseEntity<>(userService.login(phoneNumber, password, deviceId), HttpStatus.OK);
     }
 
     @PostMapping(path = "/log-out")
@@ -67,7 +67,7 @@ public class FaceBookController {
             @RequestParam(name = "video") MultipartFile video,
             @RequestParam(name = "described") String described,
             @RequestParam(name = "status") String status) throws Exception {
-        return new ResponseEntity<>(postService.addPost(token,image,video,described,status),HttpStatus.OK);
+        return new ResponseEntity<>(postService.addPost(token, image, video, described, status), HttpStatus.OK);
     }
 
     @PostMapping(path = "/delete-post")
@@ -99,7 +99,7 @@ public class FaceBookController {
             @RequestParam(name = "comment") String comment,
             @RequestParam(name = "index") String index,
             @RequestParam(name = "count") String count) throws CommonException {
-        return new ResponseEntity<>(commentService.setComment(token,postId,comment, index, count),HttpStatus.OK);
+        return new ResponseEntity<>(commentService.setComment(token, postId, comment, index, count), HttpStatus.OK);
     }
 
     @PostMapping(path = "/report-post")
@@ -108,33 +108,33 @@ public class FaceBookController {
             @RequestParam(name = "id") String postId,
             @RequestParam(name = "subject") String subject,
             @RequestParam(name = "details") String details) throws CommonException {
-        return new ResponseEntity<>(reportService.reportPost(postId, token, subject, details),HttpStatus.OK);
+        return new ResponseEntity<>(reportService.reportPost(postId, token, subject, details), HttpStatus.OK);
     }
 
     @PostMapping(path = "/like")
-    public ResponseEntity<CommonResponse<SignUpResponse>> like(
-            @RequestParam(name = "token") String token,@RequestParam(name = "id") String postId) {
-        return null;
+    public ResponseEntity<CommonResponse<String>> like(
+            @RequestParam(name = "token") String token, @RequestParam(name = "id") String postId) throws CommonException {
+        return new ResponseEntity<>(iLikeService.saveLike(token, postId), HttpStatus.OK);
     }
 
     @PostMapping(path = "/get-list-posts")
-    public ResponseEntity<CommonResponse<SignUpResponse>> getListPosts(
-            @RequestParam(name = "token") String token,
-            @RequestParam(name = "user_id") String userId,
-            @RequestParam(name = "in_campaign") String inCampaign,
-            @RequestParam(name = "campaign_id") String campaignId,
-            @RequestParam(name = "latitude") String latitude,
-            @RequestParam(name = "longitude") String longitude,
-            @RequestParam(name = "last_id") String lastId,
-            @RequestParam(name = "index") String index,
-            @RequestParam(name = "count") String count) {
-        return null;
+    public ResponseEntity<CommonResponse<DataResponse>> getListPosts(
+            @RequestParam(required = false, name = "token") String token,
+            @RequestParam(required = false, name = "user_id") String user_id,
+            @RequestParam(required = false, name = "campaign_id") String in_campaign,
+            @RequestParam(required = false, name = "campaign_id") String campaign_id,
+            @RequestParam(required = false, name = "latitude") String latitude,
+            @RequestParam(required = false, name = "longitude") String longitude,
+            @RequestParam(required = false, name = "last_id") String last_id,
+            @RequestParam(defaultValue = "1", required = false, name = "index") String index,
+            @RequestParam(defaultValue = "20", required = false, name = "count") String count) throws CommonException {
+        return new ResponseEntity<>(postService.getListPosts(token, user_id, in_campaign, campaign_id, latitude, longitude, last_id, index, count), HttpStatus.OK);
     }
 
     @PostMapping(path = "/check-new-item")
-    public ResponseEntity<CommonResponse<SignUpResponse>> checkNewItem(
+    public ResponseEntity<CommonResponse<String>> checkNewItem(
             @RequestParam(name = "last_id") String lastId,
-            @RequestParam(name = "category_id") String categoryId) {
-        return null;
+            @RequestParam(name = "category_id") String categoryId) throws CommonException {
+        return new ResponseEntity<>(itemService.checkNewItem(lastId, categoryId), HttpStatus.OK);
     }
 }

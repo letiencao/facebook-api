@@ -10,6 +10,10 @@ import java.util.List;
 @Repository
 public interface FileRepository extends JpaRepository<File, Integer> {
     File save(File file);
+
     @Query(value = "SELECT * FROM file WHERE file.post_id = :postId AND file.deleted = false", nativeQuery = true)
     List<File> findByPostId(int postId);
+
+    @Query(value = "SELECT * FROM file WHERE file.deleted = false", nativeQuery = true)
+    List<File> findAllFiles();
 }

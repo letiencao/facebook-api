@@ -54,20 +54,18 @@ public class CommonService {
     }
 
     //Get user id from token
-    public CommonResponse<BaseResponse> getUserIdFromToken(String token) {
-        List<BaseResponse> list = new ArrayList<>();
-        BaseResponse baseResponse = new BaseResponse();
+    public String getUserIdFromToken(String token) throws CommonException {
+        String userId = "";
         if (jwtProvider.validateToken(token)) {
             String phoneNumber = jwtProvider.getPhoneNumberFromJWT(token);
 
             User user = userRepository.findByPhoneNumber(phoneNumber);
             if (user == null) {
-                return new CommonResponse<>(Constant.TOKEN_IS_INVALID_CODE, Constant.TOKEN_IS_INVALID_MESSAGE, null);
+                throw new CommonException(Constant.TOKEN_IS_INVALID_CODE, Constant.TOKEN_IS_INVALID_MESSAGE);
             }
-            baseResponse.setId(String.valueOf(user.getId()));
-            list.add(baseResponse);
+            userId = String.valueOf(user.getId());
         }
-        return new CommonResponse<>(Constant.OK_CODE, Constant.OK_MESSAGE, list);
+        return userId;
     }
     //đếm số từ trong 1 chuỗi
     public int countWordInString(String content){
