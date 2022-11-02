@@ -1,5 +1,6 @@
 package com.example.rest.service.impl;
 
+import com.example.rest.common.CommonException;
 import com.example.rest.common.CommonResponse;
 import com.example.rest.common.CommonService;
 import com.example.rest.common.Constant;
@@ -31,7 +32,7 @@ public class ReportService implements IReportService {
 
 
     @Override
-    public CommonResponse reportPost(String id, String token, String subject, String details){
+    public CommonResponse reportPost(String id, String token, String subject, String details) throws CommonException {
         commonService.checkCommonValidate(id, token, subject, details);
 
 

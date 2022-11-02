@@ -1,5 +1,6 @@
 package com.example.rest.service.impl;
 
+import com.example.rest.common.CommonException;
 import com.example.rest.common.CommonResponse;
 import com.example.rest.common.CommonService;
 import com.example.rest.common.Constant;
@@ -37,7 +38,7 @@ public class UserService implements IUserService, UserDetailsService {
     }
 
     @Override
-    public CommonResponse<SignUpResponse> signUp(String phoneNumber, String password, String uuid) {
+    public CommonResponse<SignUpResponse> signUp(String phoneNumber, String password, String uuid) throws CommonException {
 
         //Check common validate ~ check những trường bắt buộc đều phải khác null -> Check từng trường hợp chi tiết
         commonService.checkCommonValidate(phoneNumber,password,uuid);
@@ -63,7 +64,7 @@ public class UserService implements IUserService, UserDetailsService {
     }
 
     @Override
-    public CommonResponse<LoginResponse> login(String phoneNumber, String password, String deviceId) {
+    public CommonResponse<LoginResponse> login(String phoneNumber, String password, String deviceId) throws CommonException {
         CommonResponse<LoginResponse> commonResponse = new CommonResponse();
         List<LoginResponse> list = new ArrayList<>();
         //Check common validate ~ check những trường bắt buộc đều phải khác null -> Check từng trường hợp chi tiết
@@ -104,7 +105,7 @@ public class UserService implements IUserService, UserDetailsService {
     }
 
     @Override
-    public CommonResponse logout(String token){
+    public CommonResponse logout(String token) throws CommonException {
         commonService.checkCommonValidate(token);
 
 

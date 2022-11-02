@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post,Integer> {
-    @Query(value = "SELECT * FROM post WHERE post.id = :id AND user.deleted = false", nativeQuery = true)
+    @Query(value = "SELECT * FROM post WHERE post.id = :id AND post.deleted = false", nativeQuery = true)
     Post findById(int id);
 
     Post save(Post post);

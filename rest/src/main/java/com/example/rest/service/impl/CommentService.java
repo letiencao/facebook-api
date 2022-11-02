@@ -1,5 +1,6 @@
 package com.example.rest.service.impl;
 
+import com.example.rest.common.CommonException;
 import com.example.rest.common.CommonResponse;
 import com.example.rest.common.CommonService;
 import com.example.rest.common.Constant;
@@ -31,7 +32,7 @@ public class CommentService implements ICommentService {
     private UserRepository userRepository;
 
     @Override
-    public CommonResponse<CommentResponse> setComment(String token ,String id, String comment, String index, String count) {
+    public CommonResponse<CommentResponse> setComment(String token ,String id, String comment, String index, String count) throws CommonException {
         commonService.checkCommonValidate(token,id, comment, index, count);
 
 
