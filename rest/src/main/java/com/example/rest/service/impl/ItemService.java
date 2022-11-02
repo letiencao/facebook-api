@@ -1,5 +1,6 @@
 package com.example.rest.service.impl;
 
+import com.example.rest.common.CommonException;
 import com.example.rest.common.CommonResponse;
 import com.example.rest.common.CommonService;
 import com.example.rest.common.Constant;
@@ -21,14 +22,14 @@ public class ItemService implements IItemService {
     private PostRepository postRepository;
 
     @Override
-    public CommonResponse<String> checkNewItem(String lastId, String categoryId) {
+    public CommonResponse<String> checkNewItem(String lastId, String categoryId) throws CommonException {
         this.validateParamCheckNewItem(lastId, categoryId);
 
         //validate categoryId
         if (!StringUtils.isEmpty(categoryId)
                 && (Integer.parseInt(categoryId)) > 3
                 || Integer.parseInt(categoryId) < 0) {
-            return new CommonResponse(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE, null);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
         } else if (StringUtils.isEmpty(categoryId)) {
             categoryId = String.valueOf(0);
         }
@@ -37,13 +38,13 @@ public class ItemService implements IItemService {
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, result);
     }
 
-    private CommonResponse validateParamCheckNewItem(String lastId, String categoryId) {
+    private CommonResponse validateParamCheckNewItem(String lastId, String categoryId) throws CommonException {
         this.commonService.checkCommonValidate(lastId);
         CommonResponse commonResponse = new CommonResponse();
 
         //check exist last-post-id
         if (this.postRepository.findById(Integer.parseInt(lastId)) == null) {
-            return new CommonResponse(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE, null);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
         }
         return commonResponse;
     }

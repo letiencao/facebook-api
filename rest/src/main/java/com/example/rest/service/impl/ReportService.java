@@ -1,5 +1,6 @@
 package com.example.rest.service.impl;
 
+import com.example.rest.common.CommonException;
 import com.example.rest.common.CommonResponse;
 import com.example.rest.common.CommonService;
 import com.example.rest.common.Constant;
@@ -31,29 +32,29 @@ public class ReportService implements IReportService {
 
 
     @Override
-    public CommonResponse reportPost(String id, String token, String subject, String details){
+    public CommonResponse reportPost(String id, String token, String subject, String details) throws CommonException {
         commonService.checkCommonValidate(id, token, subject, details);
 
 
         Post post = postRepository.findById(Integer.parseInt(id));
         if (post == null){
-            return new CommonResponse<>(Constant.POST_IS_NOT_EXISTED_CODE, Constant.POST_IS_NOT_EXISTED_MESSAGE, null);
+            throw new CommonException(Constant.POST_IS_NOT_EXISTED_CODE, Constant.POST_IS_NOT_EXISTED_MESSAGE);
         }
 
 
 
-    int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
+    int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
 
         Report report = reportRepository.findByUserIdAndPostId(userId,Integer.parseInt(id));
 
         if (report != null ){
-            return  new CommonResponse<>(Constant.ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_CODE, Constant.ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_MESSAGE, null);
+            throw new CommonException(Constant.ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_CODE, Constant.ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_MESSAGE);
         }
 
     try{
         Report reportDb = reportRepository.save(setCommonReportInfo(userId, Integer.parseInt(id)));
     }catch (Exception e){
-        return new CommonResponse<>(Constant.CAN_NOT_CONNECT_TO_DB_CODE, Constant.CAN_NOT_CONNECT_TO_DB_MESSAGE, null);
+        throw new CommonException(Constant.CAN_NOT_CONNECT_TO_DB_CODE, Constant.CAN_NOT_CONNECT_TO_DB_MESSAGE);
     }
 
         //Truong hop tra ra du lieu thanh cong
