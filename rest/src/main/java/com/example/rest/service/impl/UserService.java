@@ -1,3 +1,4 @@
+
 package com.example.rest.service.impl;
 
 import com.example.rest.common.CommonException;
@@ -11,8 +12,6 @@ import com.example.rest.model.response.SignUpResponse;
 import com.example.rest.repository.UserRepository;
 import com.example.rest.security.JwtProvider;
 import com.example.rest.service.IUserService;
-import lombok.AllArgsConstructor;
-import org.apache.catalina.core.ApplicationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -41,17 +40,41 @@ public class UserService implements IUserService, UserDetailsService {
         return user != null ? new CustomUserDetails(user) : null;
     }
 
+    public static String randomString(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++)
+            sb.append(SOURCE_CHARACTER.charAt(secureRnd.nextInt(SOURCE_CHARACTER.length())));
+        return sb.toString();
+    }
+
+    public static String randomNumber(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++)
+            sb.append(SOURCE_NUMBER.charAt(secureRnd.nextInt(SOURCE_NUMBER.length())));
+        return sb.toString();
+    }
+
+    public static String codeResult(String s, int characterIndexA, int characterIndexB) {
+        char[] chars = s.toCharArray();
+        if (characterIndexA != characterIndexB) {
+            char temp = chars[characterIndexA];
+            chars[characterIndexA] = chars[characterIndexB];
+            chars[characterIndexB] = temp;
+        }
+        return new String(chars);
+    }
+
     @Override
     public CommonResponse<SignUpResponse> signUp(String phoneNumber, String password, String uuid) throws CommonException {
 
         //Check common validate ~ check những trường bắt buộc đều phải khác null -> Check từng trường hợp chi tiết
-        commonService.checkCommonValidate(phoneNumber,password,uuid);
+        commonService.checkCommonValidate(phoneNumber, password, uuid);
         //Check phone number validate
         commonService.checkPhoneNumberValid(phoneNumber);
         //Check password validate
         commonService.checkPasswordValid(password);
 
-        if(loadUserByUsername(phoneNumber) != null){
+        if (loadUserByUsername(phoneNumber) != null) {
             throw new CommonException(Constant.USER_EXISTED_CODE);
         }
 //        String token = jwtProvider.generateAccessToken(phoneNumber,uuid);
@@ -61,7 +84,7 @@ public class UserService implements IUserService, UserDetailsService {
         user.setUuid(uuid);
         user.setVerificationCode(codeResult(randomString(3) + randomNumber(3), secureRnd.nextInt(6), secureRnd.nextInt(6)));
 
-        if(userRepository.save(user) == null){
+        if (userRepository.save(user) == null) {
             throw new CommonException(Constant.EXCEPTION_ERROR_CODE);
         }
         List<SignUpResponse> list = new ArrayList<>();
@@ -76,9 +99,9 @@ public class UserService implements IUserService, UserDetailsService {
         CommonResponse<LoginResponse> commonResponse = new CommonResponse();
         List<LoginResponse> list = new ArrayList<>();
         //Check common validate ~ check những trường bắt buộc đều phải khác null -> Check từng trường hợp chi tiết
-        commonService.checkCommonValidate(phoneNumber,password,deviceId);
+        commonService.checkCommonValidate(phoneNumber, password, deviceId);
 
-        if (phoneNumber == password){
+        if (phoneNumber == password) {
             throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
         }
 
@@ -87,10 +110,10 @@ public class UserService implements IUserService, UserDetailsService {
         //Check password validate
         commonService.checkPasswordValid(password);
 
-        User user = userRepository.findByPhoneNumberAndPassword(phoneNumber,password);
+        User user = userRepository.findByPhoneNumberAndPassword(phoneNumber, password);
         String token = jwtProvider.generateAccessToken(phoneNumber);
 
-        if(user == null){
+        if (user == null) {
             throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE);
         }
 
@@ -119,13 +142,12 @@ public class UserService implements IUserService, UserDetailsService {
 
         int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
 
-        if (userId == 0){
+        if (userId == 0) {
             throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE);
         }
 
         User user = userRepository.findById(userId);
-
-        if (user == null){
+        if (user == null) {
             throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE);
         }
 
@@ -139,7 +161,7 @@ public class UserService implements IUserService, UserDetailsService {
     }
 
     //Set các thông tin chung khi thêm user
-    private User setCommonUserInfo(String phoneNumber){
+    private User setCommonUserInfo(String phoneNumber) {
         User user = new User();
         user.setDeleted(false);
         user.setLinkAvatar("-1");
@@ -148,27 +170,4 @@ public class UserService implements IUserService, UserDetailsService {
 
         return user;
     }
-
-    public static String randomString(int length) {
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) sb.append(SOURCE_CHARACTER.charAt(secureRnd.nextInt(SOURCE_CHARACTER.length())));
-        return sb.toString();
-    }
-
-    public static String randomNumber(int length) {
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) sb.append(SOURCE_NUMBER.charAt(secureRnd.nextInt(SOURCE_NUMBER.length())));
-        return sb.toString();
-    }
-
-    public static String codeResult(String s, int characterIndexA, int characterIndexB) {
-        char[] chars = s.toCharArray();
-        if(characterIndexA != characterIndexB){
-            char temp = chars[characterIndexA];
-            chars[characterIndexA] = chars[characterIndexB];
-            chars[characterIndexB] = temp;
-        }
-        return new String(chars);
-    }
-
 }
