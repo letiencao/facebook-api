@@ -29,7 +29,7 @@ public class ItemService implements IItemService {
         if (!StringUtils.isEmpty(categoryId)
                 && (Integer.parseInt(categoryId)) > 3
                 || Integer.parseInt(categoryId) < 0) {
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
         } else if (StringUtils.isEmpty(categoryId)) {
             categoryId = String.valueOf(0);
         }
@@ -44,7 +44,7 @@ public class ItemService implements IItemService {
 
         //check exist last-post-id
         if (this.postRepository.findById(Integer.parseInt(lastId)) == null) {
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
         }
         return commonResponse;
     }

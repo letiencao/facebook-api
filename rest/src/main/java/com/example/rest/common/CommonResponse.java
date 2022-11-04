@@ -8,15 +8,15 @@ import java.util.List;
 @NoArgsConstructor
 public class CommonResponse <T> {
 
-    private int code;
+    private String code;
     private String message;
     private List<T> data;
 
-    public int getCode() {
+    public String getCode() {
         return code;
     }
 
-    public void setCode(int code) {
+    public void setCode(String code) {
         this.code = code;
     }
 

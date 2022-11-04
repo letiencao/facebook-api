@@ -101,7 +101,7 @@ public class PostService implements IPostService {
                 list.add(addPostResponse);
                 return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, list);
             }
-        throw new CommonException(Constant.COULD_NOT_PUBLISH_THIS_POST_CODE, Constant.COULD_NOT_PUBLISH_THIS_POST_MESSAGE);
+        throw new CommonException(Constant.COULD_NOT_PUBLISH_THIS_POST_CODE);
     }
 
     @Override
@@ -112,11 +112,11 @@ public class PostService implements IPostService {
         //Lấy thông tin bài viết
         Post post = postRepository.findById(Integer.parseInt(postId));
         if (post == null) {
-            throw new CommonException(Constant.POST_IS_NOT_EXISTED_CODE, Constant.POST_IS_NOT_EXISTED_MESSAGE);
+            throw new CommonException(Constant.POST_IS_NOT_EXISTED_CODE);
         }
 
         if (post.getUserId() != Integer.parseInt(userId)) {
-            throw new CommonException(Constant.NOT_ACCESS_CODE, Constant.NOT_ACCESS_MESSAGE);
+            throw new CommonException(Constant.NOT_ACCESS_CODE);
         }
 
         //Xóa post -> isDeleted = true
@@ -136,7 +136,7 @@ public class PostService implements IPostService {
                 fileRepository.save(file);
             }
         }catch (Exception e){
-            throw new CommonException(Constant.CAN_NOT_CONNECT_TO_DB_CODE,Constant.CAN_NOT_CONNECT_TO_DB_MESSAGE);
+            throw new CommonException(Constant.CAN_NOT_CONNECT_TO_DB_CODE);
         }
         return new CommonResponse(Constant.OK_CODE,Constant.OK_MESSAGE,null);
     }
@@ -164,14 +164,14 @@ public class PostService implements IPostService {
         if (!StringUtils.isEmpty(last_id)) {
             Post postInDB = postRepository.findById(Integer.parseInt(last_id));
             if (postInDB == null) {
-                throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.POST_IS_NOT_EXISTED_MESSAGE);
+                throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
             }
         }
 
         //validate token and get UserId
         int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
         if (userId < 0) {
-            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_TYPE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE);
         }
 
         if (StringUtils.isEmpty(count)) {
@@ -290,12 +290,12 @@ public class PostService implements IPostService {
         //Lấy thông tin bài viết
         Post post = postRepository.findById(Integer.parseInt(postId));
         if (post == null) {
-            throw new CommonException(Constant.POST_IS_NOT_EXISTED_CODE, Constant.POST_IS_NOT_EXISTED_MESSAGE);
+            throw new CommonException(Constant.POST_IS_NOT_EXISTED_CODE);
         }
         //Lấy các file của post đó
         List<File> files = fileRepository.findByPostId(post.getId());
         if (files == null || files.size() == 0) {
-            throw new CommonException(Constant.NO_DATA_OR_END_OF_LIST_DATA_CODE, Constant.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE);
+            throw new CommonException(Constant.NO_DATA_OR_END_OF_LIST_DATA_CODE);
         }
         if (described.length() > 0) {
             post.setContent(described);
@@ -319,7 +319,7 @@ public class PostService implements IPostService {
             }
         } else {
             //Xóa ảnh ở bài viết không có ảnh
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
         }
         files = fileRepository.findByPostId(Integer.parseInt(postId));
         //Case update ảnh
@@ -350,7 +350,7 @@ public class PostService implements IPostService {
             File file = files.get(0);
             commonSaveFileIntoDB(file, userId, video, "s");
         } else {
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
     }
@@ -371,7 +371,7 @@ public class PostService implements IPostService {
         try (InputStream is = file.getInputStream()) {
             Files.copy(is, rootLocation.resolve(file.getOriginalFilename()));
         } catch (IOException ie) {
-            throw new CommonException(Constant.UPLOAD_FILE_FAILED_CODE, Constant.UPLOAD_FILE_FAILED_MESSAGE);
+            throw new CommonException(Constant.UPLOAD_FILE_FAILED_CODE);
 
         }
         return null;
@@ -382,7 +382,7 @@ public class PostService implements IPostService {
         try{
             Files.deleteIfExists(Path.of(rootLocation + "/" + fileName));
         }catch (Exception e){
-            throw new CommonException(Constant.EXCEPTION_ERROR_CODE,Constant.EXCEPTION_ERROR_MESSAGE);
+            throw new CommonException(Constant.EXCEPTION_ERROR_CODE);
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
     }
@@ -442,15 +442,15 @@ public class PostService implements IPostService {
     public CommonResponse checkConstraintOfFile(String described, MultipartFile[] image, MultipartFile video) throws Exception {
         //Không truyền described, image và video (y/c 1 trong 3)
         if (described == null && image.length == 0 && video.isEmpty()) {
-            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_IS_NOT_ENOUGH_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE);
         }
         //truyền cả image và video
         if ((image.length > 0) && !video.isEmpty()) {
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
         }
         //Check quá số lượng file
         if ((image.length > 4)) {
-            throw new CommonException(Constant.MAXIMUM_NUMBER_OF_IMAGES_CODE, Constant.MAXIMUM_NUMBER_OF_IMAGES_MESSAGE);
+            throw new CommonException(Constant.MAXIMUM_NUMBER_OF_IMAGES_CODE);
         }
         //Add file name into List to trim
         List<String> fileNames = new ArrayList<>();
@@ -459,11 +459,11 @@ public class PostService implements IPostService {
         }
         //truyền image/video sai định dạng || nội dung bài viết quá 500 từ
         if ((image.length > 0 && !checkListImageFilesTypeValid(fileNames)) || (!video.isEmpty() && !checkVideoFileTypeValid(video.getOriginalFilename()) || commonService.countWordInString(described) > 500)) {
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
         }
         //Check quá dung lượng của image và video
         if (getImageFileSize(image) * Constant.CONVERSION_TO_MB > 4 || video.getSize() * Constant.CONVERSION_TO_MB > 10) {
-            throw new CommonException(Constant.FILE_SIZE_IS_TOO_BIG_CODE, Constant.FILE_SIZE_IS_TOO_BIG_MESSAGE);
+            throw new CommonException(Constant.FILE_SIZE_IS_TOO_BIG_CODE);
 
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);

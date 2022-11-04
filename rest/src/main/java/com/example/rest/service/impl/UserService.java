@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,9 @@ public class UserService implements IUserService, UserDetailsService {
     private CommonService commonService;
     @Autowired
     private JwtProvider jwtProvider;
+    static final String SOURCE_CHARACTER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static final String SOURCE_NUMBER = "0123456789";
+    static SecureRandom secureRnd = new SecureRandom();
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
@@ -48,17 +52,21 @@ public class UserService implements IUserService, UserDetailsService {
         commonService.checkPasswordValid(password);
 
         if(loadUserByUsername(phoneNumber) != null){
-            throw new CommonException(Constant.USER_EXISTED_CODE,Constant.USER_EXISTED_MESSAGE);
+            throw new CommonException(Constant.USER_EXISTED_CODE);
         }
 //        String token = jwtProvider.generateAccessToken(phoneNumber,uuid);
         User user = setCommonUserInfo(phoneNumber);
         user.setPhoneNumber(phoneNumber);
         user.setPassword(password);
+        user.setUuid(uuid);
+        user.setVerificationCode(codeResult(randomString(3) + randomNumber(3), secureRnd.nextInt(6), secureRnd.nextInt(6)));
+
         if(userRepository.save(user) == null){
-            throw new CommonException(Constant.EXCEPTION_ERROR_CODE,Constant.EXCEPTION_ERROR_MESSAGE);
+            throw new CommonException(Constant.EXCEPTION_ERROR_CODE);
         }
         List<SignUpResponse> list = new ArrayList<>();
         SignUpResponse signUpResponse = new SignUpResponse();
+        signUpResponse.setVerificationCode(user.getVerificationCode());
         list.add(signUpResponse);
         return new CommonResponse<>(Constant.OK_CODE, Constant.OK_MESSAGE, list);
     }
@@ -71,7 +79,7 @@ public class UserService implements IUserService, UserDetailsService {
         commonService.checkCommonValidate(phoneNumber,password,deviceId);
 
         if (phoneNumber == password){
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE , Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
         }
 
         //Check phone number validate
@@ -83,7 +91,7 @@ public class UserService implements IUserService, UserDetailsService {
         String token = jwtProvider.generateAccessToken(phoneNumber);
 
         if(user == null){
-            throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE,Constant.USER_IS_NOT_VALIDATED_MESSAGE);
+            throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE);
         }
 
 
@@ -112,13 +120,13 @@ public class UserService implements IUserService, UserDetailsService {
         int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
 
         if (userId == 0){
-            throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE, Constant.USER_IS_NOT_VALIDATED_MESSAGE);
+            throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE);
         }
 
         User user = userRepository.findById(userId);
 
         if (user == null){
-            throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE, Constant.USER_IS_NOT_VALIDATED_MESSAGE);
+            throw new CommonException(Constant.USER_IS_NOT_VALIDATED_CODE);
         }
 
         user.setToken("");
@@ -139,6 +147,28 @@ public class UserService implements IUserService, UserDetailsService {
         user.setCreatedBy(phoneNumber);
 
         return user;
+    }
+
+    public static String randomString(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) sb.append(SOURCE_CHARACTER.charAt(secureRnd.nextInt(SOURCE_CHARACTER.length())));
+        return sb.toString();
+    }
+
+    public static String randomNumber(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) sb.append(SOURCE_NUMBER.charAt(secureRnd.nextInt(SOURCE_NUMBER.length())));
+        return sb.toString();
+    }
+
+    public static String codeResult(String s, int characterIndexA, int characterIndexB) {
+        char[] chars = s.toCharArray();
+        if(characterIndexA != characterIndexB){
+            char temp = chars[characterIndexA];
+            chars[characterIndexA] = chars[characterIndexB];
+            chars[characterIndexB] = temp;
+        }
+        return new String(chars);
     }
 
 }

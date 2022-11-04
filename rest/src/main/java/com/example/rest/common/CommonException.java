@@ -1,20 +1,30 @@
 package com.example.rest.common;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class CommonException extends Exception{
-    private int code;
-    private String message;
-    public CommonException(int code,String message){
+    private String code;
+    public CommonException(){
+        super();
+    }
+    public CommonException(String code){
+        super(Constant.getErrMsg(code));
         this.code = code;
-        this.message = message;
     }
 
-    public int getCode() {
+    public String getCode() {
 
         return code;
     }
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        return this;
+    }
 
-    public void setCode(int code) {
+    public void setCode(String code) {
         this.code = code;
     }
+
 
 }

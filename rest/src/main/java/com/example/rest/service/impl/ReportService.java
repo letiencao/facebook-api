@@ -38,7 +38,7 @@ public class ReportService implements IReportService {
 
         Post post = postRepository.findById(Integer.parseInt(id));
         if (post == null){
-            throw new CommonException(Constant.POST_IS_NOT_EXISTED_CODE, Constant.POST_IS_NOT_EXISTED_MESSAGE);
+            throw new CommonException(Constant.POST_IS_NOT_EXISTED_CODE);
         }
 
 
@@ -48,13 +48,13 @@ public class ReportService implements IReportService {
         Report report = reportRepository.findByUserIdAndPostId(userId,Integer.parseInt(id));
 
         if (report != null ){
-            throw new CommonException(Constant.ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_CODE, Constant.ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_MESSAGE);
+            throw new CommonException(Constant.ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_CODE);
         }
 
     try{
         Report reportDb = reportRepository.save(setCommonReportInfo(userId, Integer.parseInt(id)));
     }catch (Exception e){
-        throw new CommonException(Constant.CAN_NOT_CONNECT_TO_DB_CODE, Constant.CAN_NOT_CONNECT_TO_DB_MESSAGE);
+        throw new CommonException(Constant.CAN_NOT_CONNECT_TO_DB_CODE);
     }
 
         //Truong hop tra ra du lieu thanh cong

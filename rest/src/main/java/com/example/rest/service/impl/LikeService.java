@@ -32,10 +32,10 @@ public class LikeService implements ILikeService {
         int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
         //findPostById
         if (StringUtils.isEmpty(id) || StringUtils.isEmpty(postRepository.findById(Integer.parseInt(id)))) {
-            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_TYPE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE);
         }
         if (userId < 0) {
-            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_TYPE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE);
         }
         int numberSuccess = 0;
         //like lần thứ 2 -> xóa like hiện tại
@@ -53,7 +53,7 @@ public class LikeService implements ILikeService {
                 likesRepository.save(likeInDB);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-                throw new CommonException(Constant.EXCEPTION_ERROR_CODE, Constant.EXCEPTION_ERROR_MESSAGE);
+                throw new CommonException(Constant.EXCEPTION_ERROR_CODE);
             }
         } else {
             //like lần thứ nhất
@@ -65,7 +65,7 @@ public class LikeService implements ILikeService {
                 like.setPostId(id);
                 likesRepository.save(like);
             } catch (Exception e) {
-                throw new CommonException(Constant.EXCEPTION_ERROR_CODE, Constant.EXCEPTION_ERROR_MESSAGE);
+                throw new CommonException(Constant.EXCEPTION_ERROR_CODE);
             }
         }
         //find number of like in the post

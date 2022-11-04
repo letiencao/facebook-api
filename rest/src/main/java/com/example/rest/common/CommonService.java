@@ -27,7 +27,7 @@ public class CommonService {
         // phải check -> static array [10]
         for (int i = 0; i < objects.length; i++) {
             if (StringUtils.isEmpty(objects[i].toString())) {
-                throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_IS_NOT_ENOUGH_MESSAGE);
+                throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE);
             }
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
@@ -38,7 +38,7 @@ public class CommonService {
         Pattern pattern = Pattern.compile("(84|0[3|5|7|8|9])+([0-9]{8})\\b");
         Matcher matcher = pattern.matcher(phoneNumber);
         if (!matcher.matches()) {
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
     }
@@ -48,7 +48,7 @@ public class CommonService {
 
         int length = password.length();
         if (length < 6 || length > 10) {
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
+            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
     }
@@ -61,7 +61,7 @@ public class CommonService {
 
             User user = userRepository.findByPhoneNumber(phoneNumber);
             if (user == null) {
-                throw new CommonException(Constant.TOKEN_IS_INVALID_CODE, Constant.TOKEN_IS_INVALID_MESSAGE);
+                throw new CommonException(Constant.TOKEN_IS_INVALID_CODE);
             }
             userId = String.valueOf(user.getId());
         }

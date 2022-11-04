@@ -41,7 +41,7 @@ public class CommentService implements ICommentService {
 
 // truyen vao id bai viet ko ton tai
     if (post == null){
-        throw new CommonException(Constant.POST_IS_NOT_EXISTED_CODE, Constant.POST_IS_NOT_EXISTED_MESSAGE);
+        throw new CommonException(Constant.POST_IS_NOT_EXISTED_CODE);
     }
 
         int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
@@ -55,20 +55,20 @@ public class CommentService implements ICommentService {
 
 
         }catch (Exception e){
-            throw new CommonException(Constant.CAN_NOT_CONNECT_TO_DB_CODE, Constant.CAN_NOT_CONNECT_TO_DB_MESSAGE);
+            throw new CommonException(Constant.CAN_NOT_CONNECT_TO_DB_CODE);
         }
 
     List<Comment> comments = commentRepository.findByPostId(Integer.parseInt(id));
     int sizeOfComments = comments.size();
     if(sizeOfComments == 0){
-        throw new CommonException(Constant.NO_DATA_OR_END_OF_LIST_DATA_CODE,Constant.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE);
+        throw new CommonException(Constant.NO_DATA_OR_END_OF_LIST_DATA_CODE);
     }
 //    truyen vao sai index va count
     int indexInteger = Integer.parseInt(index);
     int countInteger = Integer.parseInt(count);
     if (indexInteger < 0 || indexInteger > sizeOfComments - 1 || countInteger <= 0
             || indexInteger + countInteger > sizeOfComments){
-        throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE);
+        throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
     }
 
 

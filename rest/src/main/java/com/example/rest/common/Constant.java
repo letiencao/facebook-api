@@ -1,27 +1,29 @@
 package com.example.rest.common;
 
+import java.util.HashMap;
+
 public class Constant {
-    public static final int OK_CODE = 1000;
-    public static final int POST_IS_NOT_EXISTED_CODE = 9992;
-    public static final int CODE_VERIFY_IS_INCORRECT_CODE = 9993;
-    public static final int NO_DATA_OR_END_OF_LIST_DATA_CODE = 9994;
-    public static final int USER_IS_NOT_VALIDATED_CODE = 9995;
-    public static final int USER_EXISTED_CODE = 9996;
-    public static final int METHOD_IS_INVALID_CODE = 9997;
-    public static final int TOKEN_IS_INVALID_CODE = 9998;
-    public static final int EXCEPTION_ERROR_CODE = 9999;
-    public static final int CAN_NOT_CONNECT_TO_DB_CODE = 1001;
-    public static final int PARAMETER_IS_NOT_ENOUGH_CODE = 1002;
-    public static final int PARAMETER_TYPE_IS_INVALID_CODE = 1003;
-    public static final int PARAMETER_VALUE_IS_INVALID_CODE = 1004;
-    public static final int UNKNOWN_ERROR_CODE = 1005;
-    public static final int FILE_SIZE_IS_TOO_BIG_CODE = 1006;
-    public static final int UPLOAD_FILE_FAILED_CODE = 1007;
-    public static final int MAXIMUM_NUMBER_OF_IMAGES_CODE = 1008;
-    public static final int NOT_ACCESS_CODE = 1009;
-    public static final int ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_CODE = 1010;
-    public static final int COULD_NOT_PUBLISH_THIS_POST_CODE = 1011;
-    public static final int LIMITED_ACCESS_CODE = 1012;
+    public static final String OK_CODE = "1000";
+    public static final String POST_IS_NOT_EXISTED_CODE = "9992";
+    public static final String CODE_VERIFY_IS_INCORRECT_CODE = "9993";
+    public static final String NO_DATA_OR_END_OF_LIST_DATA_CODE = "9994";
+    public static final String USER_IS_NOT_VALIDATED_CODE = "9995";
+    public static final String USER_EXISTED_CODE = "9996";
+    public static final String METHOD_IS_INVALID_CODE = "9997";
+    public static final String TOKEN_IS_INVALID_CODE = "9998";
+    public static final String EXCEPTION_ERROR_CODE = "9999";
+    public static final String CAN_NOT_CONNECT_TO_DB_CODE = "1001";
+    public static final String PARAMETER_IS_NOT_ENOUGH_CODE = "1002";
+    public static final String PARAMETER_TYPE_IS_INVALID_CODE = "1003";
+    public static final String PARAMETER_VALUE_IS_INVALID_CODE = "1004";
+    public static final String UNKNOWN_ERROR_CODE = "1005";
+    public static final String FILE_SIZE_IS_TOO_BIG_CODE = "1006";
+    public static final String UPLOAD_FILE_FAILED_CODE = "1007";
+    public static final String MAXIMUM_NUMBER_OF_IMAGES_CODE = "1008";
+    public static final String NOT_ACCESS_CODE = "1009";
+    public static final String ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_CODE = "1010";
+    public static final String COULD_NOT_PUBLISH_THIS_POST_CODE = "1011";
+    public static final String LIMITED_ACCESS_CODE = "1012";
 
     public static final String OK_MESSAGE = "OK";
     public static final String POST_IS_NOT_EXISTED_MESSAGE = "Post is not existed";
@@ -74,9 +76,38 @@ public class Constant {
 
 
 
+    public static String getErrMsg(String errorCode) {
+        return IMessage.VALUE.get(errorCode);
+    }
 
+    public interface IMessage {
+        HashMap<String, String> VALUE = new HashMap<String, String>() {
+            {
+                put(OK_CODE, OK_MESSAGE);
+                put(POST_IS_NOT_EXISTED_CODE, POST_IS_NOT_EXISTED_MESSAGE);
+                put(CODE_VERIFY_IS_INCORRECT_CODE, CODE_VERIFY_IS_INCORRECT_MESSAGE);
+                put(NO_DATA_OR_END_OF_LIST_DATA_CODE, NO_DATA_OR_END_OF_LIST_DATA_MESSAGE);
+                put(USER_IS_NOT_VALIDATED_CODE, USER_IS_NOT_VALIDATED_MESSAGE);
+                put(USER_EXISTED_CODE, USER_EXISTED_MESSAGE);
+                put(METHOD_IS_INVALID_CODE, METHOD_IS_INVALID_MESSAGE);
+                put(TOKEN_IS_INVALID_CODE, TOKEN_IS_INVALID_MESSAGE);
+                put(EXCEPTION_ERROR_CODE, EXCEPTION_ERROR_MESSAGE);
+                put(CAN_NOT_CONNECT_TO_DB_CODE, CAN_NOT_CONNECT_TO_DB_MESSAGE);
+                put(PARAMETER_IS_NOT_ENOUGH_CODE, PARAMETER_IS_NOT_ENOUGH_MESSAGE);
+                put(PARAMETER_TYPE_IS_INVALID_CODE, PARAMETER_TYPE_IS_INVALID_MESSAGE);
+                put(PARAMETER_VALUE_IS_INVALID_CODE, PARAMETER_VALUE_IS_INVALID_MESSAGE);
+                put(UNKNOWN_ERROR_CODE, UNKNOWN_ERROR_MESSAGE);
+                put(FILE_SIZE_IS_TOO_BIG_CODE, FILE_SIZE_IS_TOO_BIG_MESSAGE);
+                put(UPLOAD_FILE_FAILED_CODE, UPLOAD_FILE_FAILED_MESSAGE);
+                put(MAXIMUM_NUMBER_OF_IMAGES_CODE, MAXIMUM_NUMBER_OF_IMAGES_MESSAGE);
+                put(NOT_ACCESS_CODE, NOT_ACCESS_MESSAGE);
+                put(ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_CODE, ACTION_HAS_BEEN_DONE_PREVIOUSLY_BY_THIS_USER_MESSAGE);
+                put(COULD_NOT_PUBLISH_THIS_POST_CODE, COULD_NOT_PUBLISH_THIS_POST_MESSAGE);
+                put(LIMITED_ACCESS_CODE, LIMITED_ACCESS_MESSAGE);
+            }
 
-
+        };
+    }
 
 
 
