@@ -1,5 +1,6 @@
 package com.example.rest.service.impl;
 
+import com.example.rest.common.CommonException;
 import com.example.rest.common.CommonResponse;
 import com.example.rest.common.CommonService;
 import com.example.rest.common.Constant;
@@ -26,15 +27,15 @@ public class LikeService implements ILikeService {
     private LikesRepository likesRepository;
 
     @Override
-    public CommonResponse<String> saveLike(String token, String id) {
+    public CommonResponse<String> saveLike(String token, String id) throws CommonException {
         //validate token and findUserById
-        int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
+        int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
         //findPostById
         if (StringUtils.isEmpty(id) || postRepository.findById(Integer.parseInt(id)) == null) {
-            return new CommonResponse(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_TYPE_IS_INVALID_MESSAGE, null);
+            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE);
         }
         if (userId < 0) {
-            return new CommonResponse(Constant.PARAMETER_IS_NOT_ENOUGH_CODE, Constant.PARAMETER_TYPE_IS_INVALID_MESSAGE, null);
+            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE);
         }
         //like lần thứ 2 -> xóa like hiện tại
         Likes likeInDB = likesRepository.findByUserIdAndPostId(userId, Integer.parseInt(id));
@@ -51,7 +52,7 @@ public class LikeService implements ILikeService {
                 likesRepository.save(likeInDB);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-                return new CommonResponse(Constant.EXCEPTION_ERROR_CODE, Constant.EXCEPTION_ERROR_MESSAGE, null);
+                throw new CommonException(Constant.EXCEPTION_ERROR_CODE);
             }
         } else {
             //like lần thứ nhất
@@ -63,7 +64,7 @@ public class LikeService implements ILikeService {
                 like.setPostId(id);
                 likesRepository.save(like);
             } catch (Exception e) {
-                return new CommonResponse(Constant.EXCEPTION_ERROR_CODE, Constant.EXCEPTION_ERROR_MESSAGE, null);
+                throw new CommonException(Constant.EXCEPTION_ERROR_CODE);
             }
         }
         //find number of like in the post

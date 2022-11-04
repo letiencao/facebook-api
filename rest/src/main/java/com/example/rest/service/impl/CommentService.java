@@ -1,5 +1,6 @@
 package com.example.rest.service.impl;
 
+import com.example.rest.common.CommonException;
 import com.example.rest.common.CommonResponse;
 import com.example.rest.common.CommonService;
 import com.example.rest.common.Constant;
@@ -31,7 +32,7 @@ public class CommentService implements ICommentService {
     private UserRepository userRepository;
 
     @Override
-    public CommonResponse<CommentResponse> setComment(String token ,String id, String comment, String index, String count) {
+    public CommonResponse<CommentResponse> setComment(String token ,String id, String comment, String index, String count) throws CommonException {
         commonService.checkCommonValidate(token,id, comment, index, count);
 
 
@@ -40,10 +41,10 @@ public class CommentService implements ICommentService {
 
 // truyen vao id bai viet ko ton tai
     if (post == null){
-        return new CommonResponse<>(Constant.POST_IS_NOT_EXISTED_CODE, Constant.POST_IS_NOT_EXISTED_MESSAGE, null);
+        throw new CommonException(Constant.POST_IS_NOT_EXISTED_CODE);
     }
 
-        int userId = Integer.parseInt(commonService.getUserIdFromToken(token).getData().get(0).getId());
+        int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
 
 
         //Chặn test case trả ra mã lỗi
@@ -54,20 +55,20 @@ public class CommentService implements ICommentService {
 
 
         }catch (Exception e){
-            return new CommonResponse(Constant.CAN_NOT_CONNECT_TO_DB_CODE, Constant.CAN_NOT_CONNECT_TO_DB_MESSAGE, null);
+            throw new CommonException(Constant.CAN_NOT_CONNECT_TO_DB_CODE);
         }
 
     List<Comment> comments = commentRepository.findByPostId(Integer.parseInt(id));
     int sizeOfComments = comments.size();
     if(sizeOfComments == 0){
-        return new CommonResponse<>(Constant.NO_DATA_OR_END_OF_LIST_DATA_CODE,Constant.NO_DATA_OR_END_OF_LIST_DATA_MESSAGE,null);
+        throw new CommonException(Constant.NO_DATA_OR_END_OF_LIST_DATA_CODE);
     }
 //    truyen vao sai index va count
     int indexInteger = Integer.parseInt(index);
     int countInteger = Integer.parseInt(count);
     if (indexInteger < 0 || indexInteger > sizeOfComments - 1 || countInteger <= 0
             || indexInteger + countInteger > sizeOfComments){
-        return  new CommonResponse<>(Constant.PARAMETER_VALUE_IS_INVALID_CODE, Constant.PARAMETER_VALUE_IS_INVALID_MESSAGE, null);
+        throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
     }
 
 
