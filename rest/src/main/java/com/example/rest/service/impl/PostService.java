@@ -83,7 +83,7 @@ public class PostService implements IPostService {
             if (userId > 0) {
                 Post post = postRepository.save(setCommonPostInfo(userId, described));
                 if (post != null && post.getId() > 0) {
-                    if (image.length > 0 && image.length <= 4) { //xem lại
+                    if (image.length > 0 && image.length <= 4 && image[0].getOriginalFilename().length() > 0) { //xem lại
                         for (int i = 0; i < image.length; i++) {
                             saveFile(image[i], Paths.get(Constant.ROOT_DIRECTORY));
                             fileRepository.save(setCommonFileInfo(image[i].getOriginalFilename(), post.getId()));
@@ -453,18 +453,20 @@ public class PostService implements IPostService {
             throw new CommonException(Constant.MAXIMUM_NUMBER_OF_IMAGES_CODE);
         }
         //Add file name into List to trim
-        List<String> fileNames = new ArrayList<>();
-        for (int i = 0; i < image.length; i++) {
-            fileNames.add(image[i].getOriginalFilename());
-        }
-        //truyền image/video sai định dạng || nội dung bài viết quá 500 từ
-        if ((image.length > 0 && !checkListImageFilesTypeValid(fileNames)) || (!video.isEmpty() && !checkVideoFileTypeValid(video.getOriginalFilename()) || commonService.countWordInString(described) > 500)) {
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
-        }
-        //Check quá dung lượng của image và video
-        if (getImageFileSize(image) * Constant.CONVERSION_TO_MB > 4 || video.getSize() * Constant.CONVERSION_TO_MB > 10) {
-            throw new CommonException(Constant.FILE_SIZE_IS_TOO_BIG_CODE);
+        if((image.length > 0 && image[0].getOriginalFilename().length() > 0) || !video.isEmpty()){
+            List<String> fileNames = new ArrayList<>();
+            for (int i = 0; i < image.length; i++) {
+                fileNames.add(image[i].getOriginalFilename());
+            }
+            //truyền image/video sai định dạng || nội dung bài viết quá 500 từ
+            if ((image.length > 0 && !checkListImageFilesTypeValid(fileNames)) || (!video.isEmpty() && !checkVideoFileTypeValid(video.getOriginalFilename()) || commonService.countWordInString(described) > 500)) {
+                throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
+            }
+            //Check quá dung lượng của image và video
+            if (getImageFileSize(image) * Constant.CONVERSION_TO_MB > 4 || video.getSize() * Constant.CONVERSION_TO_MB > 10) {
+                throw new CommonException(Constant.FILE_SIZE_IS_TOO_BIG_CODE);
 
+            }
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
     }
