@@ -3,6 +3,7 @@ package com.example.rest.controller;
 import com.example.rest.common.CommonException;
 import com.example.rest.common.CommonResponse;
 import com.example.rest.model.response.CommentResponse;
+import com.example.rest.model.response.LikeResponse;
 import com.example.rest.model.response.LoginResponse;
 import com.example.rest.model.response.SignUpResponse;
 import com.example.rest.model.response.post.AddPostResponse;
@@ -112,7 +113,7 @@ public class FaceBookController {
     }
 
     @PostMapping(path = "/like")
-    public ResponseEntity<CommonResponse<String>> like(
+    public ResponseEntity<CommonResponse<LikeResponse>> like(
             @RequestParam(name = "token") String token, @RequestParam(name = "id") String postId) throws CommonException {
         return new ResponseEntity<>(iLikeService.saveLike(token, postId), HttpStatus.OK);
     }

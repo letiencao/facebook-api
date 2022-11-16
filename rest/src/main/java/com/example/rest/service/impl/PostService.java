@@ -76,34 +76,34 @@ public class PostService implements IPostService {
 
     @Override
     public CommonResponse<AddPostResponse> addPost(String token, MultipartFile[] image, MultipartFile video, String described, String status) throws Exception {
-            //Check validate token (token bắt buộc)
-            commonService.checkCommonValidate(token);
-            checkConstraintOfFile(described, image, video);
-            //Save post -> Save File
-            createDirectoryIfItDoesntExist(Constant.ROOT_DIRECTORY);
-            //Get user Id from token
-            int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
-            if (userId > 0) {
-                Post post = postRepository.save(setCommonPostInfo(userId, described));
-                if (post != null && post.getId() > 0) {
-                    if (image.length > 0 && image.length <= 4) { //xem lại
-                        for (int i = 0; i < image.length; i++) {
-                            saveFile(image[i], Paths.get(Constant.ROOT_DIRECTORY));
-                            fileRepository.save(setCommonFileInfo(image[i].getOriginalFilename(), post.getId()));
-                        }
-                    } else if (!video.isEmpty()) {
-                        saveFile(video, Paths.get(Constant.ROOT_DIRECTORY));
-                        fileRepository.save(setCommonFileInfo(video.getOriginalFilename(), post.getId()));
+        //Check validate token (token bắt buộc)
+        commonService.checkCommonValidate(token);
+        checkConstraintOfFile(described, image, video);
+        //Save post -> Save File
+        createDirectoryIfItDoesntExist(Constant.ROOT_DIRECTORY);
+        //Get user Id from token
+        int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
+        if (userId > 0) {
+            Post post = postRepository.save(setCommonPostInfo(userId, described));
+            if (post != null && post.getId() > 0) {
+                if (image.length > 0 && image.length <= 4) { //xem lại
+                    for (int i = 0; i < image.length; i++) {
+                        saveFile(image[i], Paths.get(Constant.ROOT_DIRECTORY));
+                        fileRepository.save(setCommonFileInfo(image[i].getOriginalFilename(), post.getId()));
                     }
+                } else if (!video.isEmpty()) {
+                    saveFile(video, Paths.get(Constant.ROOT_DIRECTORY));
+                    fileRepository.save(setCommonFileInfo(video.getOriginalFilename(), post.getId()));
                 }
-                //For response OK status
-                List<AddPostResponse> list = new ArrayList<>();
-                AddPostResponse addPostResponse = new AddPostResponse();
-                addPostResponse.setId(String.valueOf(post.getId()));
-                addPostResponse.setUrl("");
-                list.add(addPostResponse);
-                return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, list);
             }
+            //For response OK status
+            List<AddPostResponse> list = new ArrayList<>();
+            AddPostResponse addPostResponse = new AddPostResponse();
+            addPostResponse.setId(String.valueOf(post.getId()));
+            addPostResponse.setUrl("");
+            list.add(addPostResponse);
+            return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, list);
+        }
         throw new CommonException(Constant.COULD_NOT_PUBLISH_THIS_POST_CODE);
     }
 
@@ -138,7 +138,7 @@ public class PostService implements IPostService {
                 file.setModifiedDate(System.currentTimeMillis());
                 fileRepository.save(file);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new CommonException(Constant.CAN_NOT_CONNECT_TO_DB_CODE);
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
@@ -179,6 +179,9 @@ public class PostService implements IPostService {
 
         if (StringUtils.isEmpty(count)) {
             count = String.valueOf(20);
+        }
+        if (Integer.parseInt(count) < 0) {
+            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE);
         }
         if (StringUtils.isEmpty(index)) {
             index = String.valueOf(0);
@@ -423,10 +426,10 @@ public class PostService implements IPostService {
     }
 
     //delete file
-    private CommonResponse deleteFile(String fileName,Path rootLocation) throws IOException, CommonException {
-        try{
+    private CommonResponse deleteFile(String fileName, Path rootLocation) throws IOException, CommonException {
+        try {
             Files.deleteIfExists(Path.of(rootLocation + "/" + fileName));
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new CommonException(Constant.EXCEPTION_ERROR_CODE);
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
