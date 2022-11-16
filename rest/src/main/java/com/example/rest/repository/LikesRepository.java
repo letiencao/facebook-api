@@ -40,4 +40,10 @@ public interface LikesRepository extends JpaRepository<Likes, Integer> {
             "AND likes.deleted= false"
             , nativeQuery = true)
     List<Likes> findByPostId(String postId);
+
+    @Query(value = "SELECT * " +
+            "FROM likes " +
+            "WHERE likes.deleted= false"
+            , nativeQuery = true)
+    List<Likes> findAllLikes();
 }

@@ -1,5 +1,6 @@
 package com.example.rest.model.response.posts;
 
+import java.util.Date;
 import java.util.List;
 
 public class PostsResponse {

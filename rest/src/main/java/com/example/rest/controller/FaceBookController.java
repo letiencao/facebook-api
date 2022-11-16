@@ -57,7 +57,7 @@ public class FaceBookController {
     @PostMapping(path = "/log-out")
     public ResponseEntity<CommonResponse> logout(
             @RequestParam(name = "token") String token) throws CommonException {
-        return new ResponseEntity<>(userService.logout(token),HttpStatus.OK);
+        return new ResponseEntity<>(userService.logout(token), HttpStatus.OK);
     }
 
     @PostMapping(path = "/add-post")
@@ -72,8 +72,8 @@ public class FaceBookController {
 
     @PostMapping(path = "/delete-post")
     public ResponseEntity<CommonResponse> deletePost(
-            @RequestParam(name = "token") String token,@RequestParam(name = "id") String postId) throws IOException, CommonException {
-        return new ResponseEntity<>(postService.deletePost(token,postId),HttpStatus.OK);
+            @RequestParam(name = "token") String token, @RequestParam(name = "id") String postId) throws IOException, CommonException {
+        return new ResponseEntity<>(postService.deletePost(token, postId), HttpStatus.OK);
     }
 
     @PostMapping(path = "/edit-post")
@@ -89,7 +89,7 @@ public class FaceBookController {
             @RequestParam(name = "thumb") MultipartFile thumb,
             @RequestParam(name = "auto_accept") String autoAccept,
             @RequestParam(name = "auto_block") String autoBlock) throws Exception {
-        return new ResponseEntity<>(postService.editPost(token,postId,described,status,newImageFiles,imageIdsDeleted,imageIdsSort,video,thumb,autoAccept,autoBlock),HttpStatus.OK);
+        return new ResponseEntity<>(postService.editPost(token, postId, described, status, newImageFiles, imageIdsDeleted, imageIdsSort, video, thumb, autoAccept, autoBlock), HttpStatus.OK);
     }
 
     @PostMapping(path = "/set-comment")
@@ -126,7 +126,7 @@ public class FaceBookController {
             @RequestParam(required = false, name = "latitude") String latitude,
             @RequestParam(required = false, name = "longitude") String longitude,
             @RequestParam(required = false, name = "last_id") String last_id,
-            @RequestParam(defaultValue = "1", required = false, name = "index") String index,
+            @RequestParam(defaultValue = "0", required = false, name = "index") String index,
             @RequestParam(defaultValue = "20", required = false, name = "count") String count) throws CommonException {
         return new ResponseEntity<>(postService.getListPosts(token, user_id, in_campaign, campaign_id, latitude, longitude, last_id, index, count), HttpStatus.OK);
     }
