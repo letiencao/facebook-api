@@ -5,6 +5,7 @@ import com.example.rest.common.CommonResponse;
 import com.example.rest.common.CommonService;
 import com.example.rest.common.Constant;
 import com.example.rest.model.entity.Likes;
+import com.example.rest.model.response.LikeResponse;
 import com.example.rest.repository.LikesRepository;
 import com.example.rest.repository.PostRepository;
 import com.example.rest.service.ILikeService;
@@ -27,7 +28,7 @@ public class LikeService implements ILikeService {
     private LikesRepository likesRepository;
 
     @Override
-    public CommonResponse<String> saveLike(String token, String id) throws CommonException {
+    public CommonResponse<LikeResponse> saveLike(String token, String id) throws CommonException {
         //validate token and findUserById
         int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
         //findPostById
@@ -68,15 +69,17 @@ public class LikeService implements ILikeService {
             }
         }
         //find number of like in the post
-        List<String> numberPostLikes = new ArrayList<>();
-        String numberLike = this.getNumberLikes(id);
+        List<LikeResponse> numberPostLikes = new ArrayList<>();
+        LikeResponse numberLike = this.getNumberLikes(id);
         numberPostLikes.add(numberLike);
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, numberPostLikes);
     }
 
     @Override
-    public String getNumberLikes(String postId) {
+    public LikeResponse getNumberLikes(String postId) {
         List<Likes> likes = likesRepository.findByPostId(postId);
-        return String.valueOf(likes.size());
+        LikeResponse likeResponse = new LikeResponse();
+        likeResponse.setLike(String.valueOf(likes.size()));
+        return likeResponse;
     }
 }

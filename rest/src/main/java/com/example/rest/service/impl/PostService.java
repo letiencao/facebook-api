@@ -138,7 +138,7 @@ public class PostService implements IPostService {
                 file.setModifiedDate(System.currentTimeMillis());
                 fileRepository.save(file);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new CommonException(Constant.CAN_NOT_CONNECT_TO_DB_CODE);
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
@@ -179,6 +179,9 @@ public class PostService implements IPostService {
 
         if (StringUtils.isEmpty(count)) {
             count = String.valueOf(20);
+        }
+        if (Integer.parseInt(count) < 0) {
+            throw new CommonException(Constant.PARAMETER_IS_NOT_ENOUGH_CODE);
         }
         if (StringUtils.isEmpty(index)) {
             index = String.valueOf(0);
@@ -423,10 +426,10 @@ public class PostService implements IPostService {
     }
 
     //delete file
-    private CommonResponse deleteFile(String fileName,Path rootLocation) throws IOException, CommonException {
-        try{
+    private CommonResponse deleteFile(String fileName, Path rootLocation) throws IOException, CommonException {
+        try {
             Files.deleteIfExists(Path.of(rootLocation + "/" + fileName));
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new CommonException(Constant.EXCEPTION_ERROR_CODE);
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
