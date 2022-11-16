@@ -76,34 +76,34 @@ public class PostService implements IPostService {
 
     @Override
     public CommonResponse<AddPostResponse> addPost(String token, MultipartFile[] image, MultipartFile video, String described, String status) throws Exception {
-        //Check validate token (token bắt buộc)
-        commonService.checkCommonValidate(token);
-        checkConstraintOfFile(described, image, video);
-        //Save post -> Save File
-        createDirectoryIfItDoesntExist(Constant.ROOT_DIRECTORY);
-        //Get user Id from token
-        int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
-        if (userId > 0) {
-            Post post = postRepository.save(setCommonPostInfo(userId, described));
-            if (post != null && post.getId() > 0) {
-                if (image.length > 0 && image.length <= 4) { //xem lại
-                    for (int i = 0; i < image.length; i++) {
-                        saveFile(image[i], Paths.get(Constant.ROOT_DIRECTORY));
-                        fileRepository.save(setCommonFileInfo(image[i].getOriginalFilename(), post.getId()));
+            //Check validate token (token bắt buộc)
+            commonService.checkCommonValidate(token);
+            checkConstraintOfFile(described, image, video);
+            //Save post -> Save File
+            createDirectoryIfItDoesntExist(Constant.ROOT_DIRECTORY);
+            //Get user Id from token
+            int userId = Integer.parseInt(commonService.getUserIdFromToken(token));
+            if (userId > 0) {
+                Post post = postRepository.save(setCommonPostInfo(userId, described));
+                if (post != null && post.getId() > 0) {
+                    if (image.length > 0 && image.length <= 4 && image[0].getOriginalFilename().length() > 0) { //xem lại
+                        for (int i = 0; i < image.length; i++) {
+                            saveFile(image[i], Paths.get(Constant.ROOT_DIRECTORY));
+                            fileRepository.save(setCommonFileInfo(image[i].getOriginalFilename(), post.getId()));
+                        }
+                    } else if (!video.isEmpty()) {
+                        saveFile(video, Paths.get(Constant.ROOT_DIRECTORY));
+                        fileRepository.save(setCommonFileInfo(video.getOriginalFilename(), post.getId()));
                     }
-                } else if (!video.isEmpty()) {
-                    saveFile(video, Paths.get(Constant.ROOT_DIRECTORY));
-                    fileRepository.save(setCommonFileInfo(video.getOriginalFilename(), post.getId()));
                 }
+                //For response OK status
+                List<AddPostResponse> list = new ArrayList<>();
+                AddPostResponse addPostResponse = new AddPostResponse();
+                addPostResponse.setId(String.valueOf(post.getId()));
+                addPostResponse.setUrl("");
+                list.add(addPostResponse);
+                return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, list);
             }
-            //For response OK status
-            List<AddPostResponse> list = new ArrayList<>();
-            AddPostResponse addPostResponse = new AddPostResponse();
-            addPostResponse.setId(String.valueOf(post.getId()));
-            addPostResponse.setUrl("");
-            list.add(addPostResponse);
-            return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, list);
-        }
         throw new CommonException(Constant.COULD_NOT_PUBLISH_THIS_POST_CODE);
     }
 
@@ -501,18 +501,20 @@ public class PostService implements IPostService {
             throw new CommonException(Constant.MAXIMUM_NUMBER_OF_IMAGES_CODE);
         }
         //Add file name into List to trim
-        List<String> fileNames = new ArrayList<>();
-        for (int i = 0; i < image.length; i++) {
-            fileNames.add(image[i].getOriginalFilename());
-        }
-        //truyền image/video sai định dạng || nội dung bài viết quá 500 từ
-        if ((image.length > 0 && !checkListImageFilesTypeValid(fileNames)) || (!video.isEmpty() && !checkVideoFileTypeValid(video.getOriginalFilename()) || commonService.countWordInString(described) > 500)) {
-            throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
-        }
-        //Check quá dung lượng của image và video
-        if (getImageFileSize(image) * Constant.CONVERSION_TO_MB > 4 || video.getSize() * Constant.CONVERSION_TO_MB > 10) {
-            throw new CommonException(Constant.FILE_SIZE_IS_TOO_BIG_CODE);
+        if((image.length > 0 && image[0].getOriginalFilename().length() > 0) || !video.isEmpty()){
+            List<String> fileNames = new ArrayList<>();
+            for (int i = 0; i < image.length; i++) {
+                fileNames.add(image[i].getOriginalFilename());
+            }
+            //truyền image/video sai định dạng || nội dung bài viết quá 500 từ
+            if ((image.length > 0 && !checkListImageFilesTypeValid(fileNames)) || (!video.isEmpty() && !checkVideoFileTypeValid(video.getOriginalFilename()) || commonService.countWordInString(described) > 500)) {
+                throw new CommonException(Constant.PARAMETER_VALUE_IS_INVALID_CODE);
+            }
+            //Check quá dung lượng của image và video
+            if (getImageFileSize(image) * Constant.CONVERSION_TO_MB > 4 || video.getSize() * Constant.CONVERSION_TO_MB > 10) {
+                throw new CommonException(Constant.FILE_SIZE_IS_TOO_BIG_CODE);
 
+            }
         }
         return new CommonResponse(Constant.OK_CODE, Constant.OK_MESSAGE, null);
     }

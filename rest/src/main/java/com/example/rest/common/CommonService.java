@@ -55,7 +55,7 @@ public class CommonService {
 
     //Get user id from token
     public String getUserIdFromToken(String token) throws CommonException {
-        String userId = "";
+        String userId = "-1";
         if (jwtProvider.validateToken(token)) {
             String phoneNumber = jwtProvider.getPhoneNumberFromJWT(token);
 
@@ -64,6 +64,8 @@ public class CommonService {
                 throw new CommonException(Constant.TOKEN_IS_INVALID_CODE);
             }
             userId = String.valueOf(user.getId());
+        }else{
+            throw new CommonException(Constant.TOKEN_IS_INVALID_CODE);
         }
         return userId;
     }
